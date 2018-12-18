@@ -1844,11 +1844,6 @@ impl Repository {
     /// Create a diff with the difference between two tree objects.
     ///
     /// This is equivalent to `git diff <old-tree> <new-tree>`
-    ///
-    /// The first tree will be used for the "old_file" side of the delta and the
-    /// second tree will be used for the "new_file" side of the delta.  You can
-    /// pass `None` to indicate an empty tree, although it is an error to pass
-    /// `None` for both the `old_tree` and `new_tree`.
     pub fn diff_tree_to_tree(&self,
                              old_tree: Option<&Tree>,
                              new_tree: Option<&Tree>,
@@ -1864,20 +1859,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a diff between a tree and repository index.
-    ///
-    /// This is equivalent to `git diff --cached <treeish>` or if you pass
-    /// the HEAD tree, then like `git diff --cached`.
-    ///
-    /// The tree you pass will be used for the "old_file" side of the delta, and
-    /// the index will be used for the "new_file" side of the delta.
-    ///
-    /// If you pass `None` for the index, then the existing index of the `repo`
-    /// will be used.  In this case, the index will be refreshed from disk
-    /// (if it has changed) before the diff is generated.
-    ///
-    /// If the tree is `None`, then it is considered an empty tree.
     pub fn diff_tree_to_index(&self,
                               old_tree: Option<&Tree>,
                               index: Option<&Index>,
@@ -1893,11 +1874,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a diff between two index objects.
-    ///
-    /// The first index will be used for the "old_file" side of the delta, and
-    /// the second index will be used for the "new_file" side of the delta.
     pub fn diff_index_to_index(&self,
                                old_index: &Index,
                                new_index: &Index,
@@ -1913,20 +1889,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a diff between the repository index and the workdir directory.
-    ///
-    /// This matches the `git diff` command.  See the note below on
-    /// `tree_to_workdir` for a discussion of the difference between
-    /// `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
-    /// using libgit2.
-    ///
-    /// The index will be used for the "old_file" side of the delta, and the
-    /// working directory will be used for the "new_file" side of the delta.
-    ///
-    /// If you pass `None` for the index, then the existing index of the `repo`
-    /// will be used.  In this case, the index will be refreshed from disk
-    /// (if it has changed) before the diff is generated.
     pub fn diff_index_to_workdir(&self,
                                  index: Option<&Index>,
                                  opts: Option<&mut DiffOptions>)
@@ -1940,25 +1902,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a diff between a tree and the working directory.
-    ///
-    /// The tree you provide will be used for the "old_file" side of the delta,
-    /// and the working directory will be used for the "new_file" side.
-    ///
-    /// This is not the same as `git diff <treeish>` or `git diff-index
-    /// <treeish>`.  Those commands use information from the index, whereas this
-    /// function strictly returns the differences between the tree and the files
-    /// in the working directory, regardless of the state of the index.  Use
-    /// `tree_to_workdir_with_index` to emulate those commands.
-    ///
-    /// To see difference between this and `tree_to_workdir_with_index`,
-    /// consider the example of a staged file deletion where the file has then
-    /// been put back into the working dir and further modified.  The
-    /// tree-to-workdir diff for that file is 'modified', but `git diff` would
-    /// show status 'deleted' since there is a staged delete.
-    ///
-    /// If `None` is passed for `tree`, then an empty tree is used.
     pub fn diff_tree_to_workdir(&self,
                                 old_tree: Option<&Tree>,
                                 opts: Option<&mut DiffOptions>)
@@ -1972,13 +1915,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a diff between a tree and the working directory using index data
-    /// to account for staged deletes, tracked files, etc.
-    ///
-    /// This emulates `git diff <tree>` by diffing the tree to the index and
-    /// the index to the working directory and blending the results into a
-    /// single diff that includes staged deleted, etc.
     pub fn diff_tree_to_workdir_with_index(&self,
                                            old_tree: Option<&Tree>,
                                            opts: Option<&mut DiffOptions>)
@@ -1990,8 +1926,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Create a PackBuilder
     pub fn packbuilder(&self) -> Result<PackBuilder, Error> {
         let mut ret = ptr::null_mut();
         unsafe {
@@ -1999,8 +1933,6 @@ impl Repository {
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Save the local modifications to a new stash.
     pub fn stash_save(&mut self,
                       stasher: &Signature,
                       message: &str,
@@ -2018,8 +1950,6 @@ impl Repository {
             Ok(Binding::from_raw(&raw_oid as *const _))
         }
     }
-
-    /// Apply a single stashed state from the stash list.
     pub fn stash_apply(&mut self,
                        index: usize,
                        opts: Option<&mut StashApplyOptions>)
@@ -2030,10 +1960,6 @@ impl Repository {
             Ok(())
         }
     }
-
-    /// Loop over all the stashed states and issue a callback for each one.
-    ///
-    /// Return `true` to continue iterating or `false` to stop.
     pub fn stash_foreach<C>(&mut self, mut callback: C) -> Result<(), Error>
         where C: FnMut(usize, &str, &Oid) -> bool
     {
@@ -2045,16 +1971,12 @@ impl Repository {
             Ok(())
         }
     }
-
-    /// Remove a single stashed state from the stash list.
     pub fn stash_drop(&mut self, index: usize) -> Result<(), Error> {
         unsafe {
             try_call!(raw::git_stash_drop(self.raw(), index));
             Ok(())
         }
     }
-
-    /// Apply a single stashed state from the stash list and remove it from the list if successful.
     pub fn stash_pop(&mut self,
                      index: usize,
                      opts: Option<&mut StashApplyOptions>)
@@ -2065,10 +1987,6 @@ impl Repository {
             Ok(())
         }
     }
-
-    /// Add ignore rules for a repository.
-    ///
-    /// The format of the rules is the same one of the .gitignore file.
     pub fn add_ignore_rule(&self, rules: &str) -> Result<(), Error> {
         let rules = CString::new(rules)?;
         unsafe {
@@ -2076,20 +1994,14 @@ impl Repository {
         }
         Ok(())
     }
-
-    /// Clear ignore rules that were explicitly added.
     pub fn clear_ignore_rules(&self) -> Result<(), Error> {
         unsafe {
             try_call!(raw::git_ignore_clear_internal_rules(self.raw));
         }
         Ok(())
     }
-
-    /// Test if the ignore rules apply to a given path.
     pub fn is_path_ignored<P: AsRef<Path>>(&self, path: P) -> Result<bool, Error> {
         let path = if cfg!(windows) {
-            // `git_ignore_path_is_ignored` dose not work with windows path separator
-            // so we convert \ to /
             try!(::std::ffi::CString::new(path.as_ref().to_string_lossy().replace('\\', "/")))
         } else {
             try!(path.as_ref().into_c_string())
@@ -2101,7 +2013,6 @@ impl Repository {
         Ok(ignored == 1)
     }
 }
-
 impl Binding for Repository {
     type Raw = *mut raw::git_repository;
     unsafe fn from_raw(ptr: *mut raw::git_repository) -> Repository {
@@ -2109,22 +2020,14 @@ impl Binding for Repository {
     }
     fn raw(&self) -> *mut raw::git_repository { self.raw }
 }
-
 impl Drop for Repository {
     fn drop(&mut self) {
-        unsafe { raw::git_repository_free(self.raw) }
     }
 }
-
 impl RepositoryInitOptions {
-    /// Creates a default set of initialization options.
-    ///
-    /// By default this will set flags for creating all necessary directories
-    /// and initializing a directory from the user-configured templates path.
     pub fn new() -> RepositoryInitOptions {
         RepositoryInitOptions {
             flags: raw::GIT_REPOSITORY_INIT_MKDIR as u32 |
-                   raw::GIT_REPOSITORY_INIT_MKPATH as u32 |
                    raw::GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE as u32,
             mode: 0,
             workdir_path: None,
@@ -2134,320 +2037,71 @@ impl RepositoryInitOptions {
             origin_url: None,
         }
     }
-
-    /// Create a bare repository with no working directory.
-    ///
-    /// Defaults to false.
     pub fn bare(&mut self, bare: bool) -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_BARE, bare)
     }
-
-    /// Return an error if the repository path appears to already be a git
-    /// repository.
-    ///
-    /// Defaults to false.
     pub fn no_reinit(&mut self, enabled: bool) -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_NO_REINIT, enabled)
     }
-
-    /// Normally a '/.git/' will be appended to the repo path for non-bare repos
-    /// (if it is not already there), but passing this flag prevents that
-    /// behavior.
-    ///
-    /// Defaults to false.
     pub fn no_dotgit_dir(&mut self, enabled: bool) -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_NO_DOTGIT_DIR, enabled)
     }
-
-    /// Make the repo path (and workdir path) as needed. The ".git" directory
-    /// will always be created regardless of this flag.
-    ///
-    /// Defaults to true.
     pub fn mkdir(&mut self, enabled: bool) -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_MKDIR, enabled)
     }
-
-    /// Recursively make all components of the repo and workdir path sas
-    /// necessary.
-    ///
-    /// Defaults to true.
     pub fn mkpath(&mut self, enabled: bool) -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_MKPATH, enabled)
     }
-
-    /// Set to one of the `RepositoryInit` constants, or a custom value.
     pub fn mode(&mut self, mode: RepositoryInitMode)
                 -> &mut RepositoryInitOptions {
         self.mode = mode.bits();
         self
     }
-
-    /// Enable or disable using external templates.
-    ///
-    /// If enabled, then the `template_path` option will be queried first, then
-    /// `init.templatedir` from the global config, and finally
-    /// `/usr/share/git-core-templates` will be used (if it exists).
-    ///
-    /// Defaults to true.
     pub fn external_template(&mut self, enabled: bool)
                              -> &mut RepositoryInitOptions {
         self.flag(raw::GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE, enabled)
     }
-
     fn flag(&mut self, flag: raw::git_repository_init_flag_t, on: bool)
             -> &mut RepositoryInitOptions {
         if on {
             self.flags |= flag as u32;
-        } else {
-            self.flags &= !(flag as u32);
         }
         self
     }
-
-    /// The path do the working directory.
-    ///
-    /// If this is a relative path it will be evaulated relative to the repo
-    /// path. If this is not the "natural" working directory, a .git gitlink
-    /// file will be created here linking to the repo path.
     pub fn workdir_path(&mut self, path: &Path) -> &mut RepositoryInitOptions {
         self.workdir_path = Some(path.into_c_string().unwrap());
         self
     }
-
-    /// If set, this will be used to initialize the "description" file in the
-    /// repository instead of using the template content.
     pub fn description(&mut self, desc: &str) -> &mut RepositoryInitOptions {
         self.description = Some(CString::new(desc).unwrap());
         self
     }
-
-    /// When the `external_template` option is set, this is the first location
-    /// to check for the template directory.
-    ///
-    /// If this is not configured, then the default locations will be searched
-    /// instead.
     pub fn template_path(&mut self, path: &Path) -> &mut RepositoryInitOptions {
         self.template_path = Some(path.into_c_string().unwrap());
         self
     }
-
-    /// The name of the head to point HEAD at.
-    ///
-    /// If not configured, this will be treated as `master` and the HEAD ref
-    /// will be set to `refs/heads/master`. If this begins with `refs/` it will
-    /// be used verbatim; otherwise `refs/heads/` will be prefixed
     pub fn initial_head(&mut self, head: &str) -> &mut RepositoryInitOptions {
         self.initial_head = Some(CString::new(head).unwrap());
         self
     }
-
-    /// If set, then after the rest of the repository initialization is
-    /// completed an `origin` remote will be added pointing to this URL.
     pub fn origin_url(&mut self, url: &str) -> &mut RepositoryInitOptions {
         self.origin_url = Some(CString::new(url).unwrap());
         self
     }
-
-    /// Creates a set of raw init options to be used with
-    /// `git_repository_init_ext`.
-    ///
-    /// This method is unsafe as the returned value may have pointers to the
-    /// interior of this structure.
     pub unsafe fn raw(&self) -> raw::git_repository_init_options {
         let mut opts = mem::zeroed();
         assert_eq!(raw::git_repository_init_init_options(&mut opts,
                                 raw::GIT_REPOSITORY_INIT_OPTIONS_VERSION), 0);
-        opts.flags = self.flags;
-        opts.mode = self.mode;
-        opts.workdir_path = ::call::convert(&self.workdir_path);
-        opts.description = ::call::convert(&self.description);
-        opts.template_path = ::call::convert(&self.template_path);
-        opts.initial_head = ::call::convert(&self.initial_head);
-        opts.origin_url = ::call::convert(&self.origin_url);
         opts
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use std::ffi::OsStr;
-    use std::fs;
-    use std::path::Path;
-    use tempdir::TempDir;
-    use {Repository, Oid, ObjectType, ResetType};
-    use build::CheckoutBuilder;
-
-    #[test]
     fn smoke_init() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path();
-
-        let repo = Repository::init(path).unwrap();
-        assert!(!repo.is_bare());
-    }
-
-    #[test]
-    fn smoke_init_bare() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path();
-
-        let repo = Repository::init_bare(path).unwrap();
-        assert!(repo.is_bare());
-        assert!(repo.namespace().is_none());
-    }
-
-    #[test]
-    fn smoke_open() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path();
-        Repository::init(td.path()).unwrap();
-        let repo = Repository::open(path).unwrap();
-        assert!(!repo.is_bare());
-        assert!(!repo.is_shallow());
-        assert!(repo.is_empty().unwrap());
-        assert_eq!(::test::realpath(&repo.path()).unwrap(),
-                   ::test::realpath(&td.path().join(".git/")).unwrap());
-        assert_eq!(repo.state(), ::RepositoryState::Clean);
-    }
-
-    #[test]
-    fn smoke_open_bare() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path();
-        Repository::init_bare(td.path()).unwrap();
-
-        let repo = Repository::open(path).unwrap();
-        assert!(repo.is_bare());
-        assert_eq!(::test::realpath(&repo.path()).unwrap(),
-                   ::test::realpath(&td.path().join("")).unwrap());
-    }
-
-    #[test]
-    fn smoke_checkout() {
-        let (_td, repo) = ::test::repo_init();
-        repo.checkout_head(None).unwrap();
-    }
-
-    #[test]
-    fn smoke_revparse() {
-        let (_td, repo) = ::test::repo_init();
-        let rev = repo.revparse("HEAD").unwrap();
-        assert!(rev.to().is_none());
-        let from = rev.from().unwrap();
-        assert!(rev.from().is_some());
-
-        assert_eq!(repo.revparse_single("HEAD").unwrap().id(), from.id());
-        let obj = repo.find_object(from.id(), None).unwrap().clone();
-        obj.peel(ObjectType::Any).unwrap();
-        obj.short_id().unwrap();
-        repo.reset(&obj, ResetType::Hard, None).unwrap();
-        let mut opts = CheckoutBuilder::new();
-        t!(repo.reset(&obj, ResetType::Soft, Some(&mut opts)));
-    }
-
-    #[test]
-    fn makes_dirs() {
-        let td = TempDir::new("foo").unwrap();
-        Repository::init(&td.path().join("a/b/c/d")).unwrap();
-    }
-
-    #[test]
-    fn smoke_discover() {
-        let td = TempDir::new("test").unwrap();
-        let subdir = td.path().join("subdi");
-        fs::create_dir(&subdir).unwrap();
-        Repository::init_bare(td.path()).unwrap();
-        let repo = Repository::discover(&subdir).unwrap();
-        assert_eq!(::test::realpath(&repo.path()).unwrap(),
-                   ::test::realpath(&td.path().join("")).unwrap());
-    }
-
-    #[test]
-    fn smoke_open_ext() {
-        let td = TempDir::new("test").unwrap();
-        let subdir = td.path().join("subdir");
-        fs::create_dir(&subdir).unwrap();
-        Repository::init(td.path()).unwrap();
-
-        let repo = Repository::open_ext(&subdir, ::RepositoryOpenFlags::empty(), &[] as &[&OsStr]).unwrap();
-        assert!(!repo.is_bare());
-        assert_eq!(::test::realpath(&repo.path()).unwrap(),
-                   ::test::realpath(&td.path().join(".git")).unwrap());
-
-        let repo = Repository::open_ext(&subdir, ::RepositoryOpenFlags::BARE, &[] as &[&OsStr]).unwrap();
-        assert!(repo.is_bare());
-        assert_eq!(::test::realpath(&repo.path()).unwrap(),
-                   ::test::realpath(&td.path().join(".git")).unwrap());
-
-        let err = Repository::open_ext(&subdir, ::RepositoryOpenFlags::NO_SEARCH, &[] as &[&OsStr]).err().unwrap();
-        assert_eq!(err.code(), ::ErrorCode::NotFound);
-
         assert!(Repository::open_ext(&subdir,
-                                     ::RepositoryOpenFlags::empty(),
                                      &[&subdir]).is_ok());
     }
-
     fn graph_repo_init() -> (TempDir, Repository) {
-        let (_td, repo) = ::test::repo_init();
-        {
-            let head = repo.head().unwrap().target().unwrap();
-            let head = repo.find_commit(head).unwrap();
-
-            let mut index = repo.index().unwrap();
-            let id = index.write_tree().unwrap();
-
-            let tree = repo.find_tree(id).unwrap();
-            let sig = repo.signature().unwrap();
-            repo.commit(Some("HEAD"), &sig, &sig, "second",
-                        &tree, &[&head]).unwrap();
-        }
-        (_td, repo)
-    }
-
-    #[test]
-    fn smoke_graph_ahead_behind() {
-        let (_td, repo) = graph_repo_init();
-        let head = repo.head().unwrap().target().unwrap();
-        let head = repo.find_commit(head).unwrap();
-        let head_id = head.id();
-        let head_parent_id = head.parent(0).unwrap().id();
-        let (ahead, behind) = repo.graph_ahead_behind(head_id,
-                                                      head_parent_id).unwrap();
-        assert_eq!(ahead, 1);
-        assert_eq!(behind, 0);
-        let (ahead, behind) = repo.graph_ahead_behind(head_parent_id,
-                                                      head_id).unwrap();
-        assert_eq!(ahead, 0);
-        assert_eq!(behind, 1);
-    }
-
-    #[test]
-    fn smoke_graph_descendant_of() {
-        let (_td, repo) = graph_repo_init();
-        let head = repo.head().unwrap().target().unwrap();
-        let head = repo.find_commit(head).unwrap();
-        let head_id = head.id();
-        let head_parent_id = head.parent(0).unwrap().id();
-        assert!(repo.graph_descendant_of(head_id, head_parent_id).unwrap());
-        assert!(!repo.graph_descendant_of(head_parent_id, head_id).unwrap());
-    }
-
-    #[test]
-    fn smoke_reference_has_log_ensure_log() {
-        let (_td, repo) = ::test::repo_init();
-
-        assert_eq!(repo.reference_has_log("HEAD").unwrap(), true);
-        assert_eq!(repo.reference_has_log("refs/heads/master").unwrap(), true);
-        assert_eq!(repo.reference_has_log("NOT_HEAD").unwrap(), false);
-        let master_oid = repo.revparse_single("master").unwrap().id();
-        assert!(repo.reference("NOT_HEAD", master_oid, false, "creating a new branch").is_ok());
-        assert_eq!(repo.reference_has_log("NOT_HEAD").unwrap(), false);
-        assert!(repo.reference_ensure_log("NOT_HEAD").is_ok());
-        assert_eq!(repo.reference_has_log("NOT_HEAD").unwrap(), true);
-    }
-
-    #[test]
-    fn smoke_set_head() {
     }
     fn smoke_merge_bases() {
         let oid5 = repo.commit(Some("refs/heads/branch_b"), &sig, &sig,

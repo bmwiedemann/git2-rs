@@ -503,25 +503,14 @@ impl Status {
     is_bit_set!(is_index_typechange, Status::INDEX_TYPECHANGE);
     is_bit_set!(is_wt_new, Status::WT_NEW);
     is_bit_set!(is_wt_modified, Status::WT_MODIFIED);
-    is_bit_set!(is_wt_deleted, Status::WT_DELETED);
-    is_bit_set!(is_wt_typechange, Status::WT_TYPECHANGE);
-    is_bit_set!(is_wt_renamed, Status::WT_RENAMED);
-    is_bit_set!(is_ignored, Status::IGNORED);
-    is_bit_set!(is_conflicted, Status::CONFLICTED);
 }
 bitflags! {
     pub struct RepositoryInitMode: u32 {
         const SHARED_UMASK = raw::GIT_REPOSITORY_INIT_SHARED_UMASK as u32;
-        const SHARED_GROUP = raw::GIT_REPOSITORY_INIT_SHARED_GROUP as u32;
-        const SHARED_ALL = raw::GIT_REPOSITORY_INIT_SHARED_ALL as u32;
     }
 }
 impl RepositoryInitMode {
-    is_bit_set!(is_shared_umask, RepositoryInitMode::SHARED_UMASK);
-    is_bit_set!(is_shared_group, RepositoryInitMode::SHARED_GROUP);
-    is_bit_set!(is_shared_all, RepositoryInitMode::SHARED_ALL);
 }
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Delta {
     Unmodified,
     Added,
@@ -537,14 +526,11 @@ pub enum Delta {
 }
 bitflags! {
     pub struct SubmoduleStatus: u32 {
-        const IN_HEAD = raw::GIT_SUBMODULE_STATUS_IN_HEAD as u32;
         const IN_INDEX = raw::GIT_SUBMODULE_STATUS_IN_INDEX as u32;
-        const IN_CONFIG = raw::GIT_SUBMODULE_STATUS_IN_CONFIG as u32;
         const WD_UNINITIALIZED =
                 raw::GIT_SUBMODULE_STATUS_WD_UNINITIALIZED as u32;
         const WD_INDEX_MODIFIED =
                 raw::GIT_SUBMODULE_STATUS_WD_INDEX_MODIFIED as u32;
-        const WD_UNTRACKED = raw::GIT_SUBMODULE_STATUS_WD_UNTRACKED as u32;
     }
 }
 impl SubmoduleStatus {
@@ -559,7 +545,6 @@ pub enum SubmoduleIgnore {
 bitflags! {
     pub struct PathspecFlags: u32 {
         const DEFAULT = raw::GIT_PATHSPEC_DEFAULT as u32;
-        const FAILURES_ONLY = raw::GIT_PATHSPEC_FAILURES_ONLY as u32;
     }
 }
 impl PathspecFlags {

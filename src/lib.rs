@@ -1061,53 +1061,19 @@ bitflags! {
         #[allow(missing_docs)]
         const IN_CONFIG = raw::GIT_SUBMODULE_STATUS_IN_CONFIG as u32;
         #[allow(missing_docs)]
-        const IN_WD = raw::GIT_SUBMODULE_STATUS_IN_WD as u32;
-        #[allow(missing_docs)]
-        const INDEX_ADDED = raw::GIT_SUBMODULE_STATUS_INDEX_ADDED as u32;
-        #[allow(missing_docs)]
-        const INDEX_DELETED = raw::GIT_SUBMODULE_STATUS_INDEX_DELETED as u32;
-        #[allow(missing_docs)]
-        const INDEX_MODIFIED = raw::GIT_SUBMODULE_STATUS_INDEX_MODIFIED as u32;
         #[allow(missing_docs)]
         const WD_UNINITIALIZED =
                 raw::GIT_SUBMODULE_STATUS_WD_UNINITIALIZED as u32;
         #[allow(missing_docs)]
-        const WD_ADDED = raw::GIT_SUBMODULE_STATUS_WD_ADDED as u32;
-        #[allow(missing_docs)]
-        const WD_DELETED = raw::GIT_SUBMODULE_STATUS_WD_DELETED as u32;
-        #[allow(missing_docs)]
-        const WD_MODIFIED = raw::GIT_SUBMODULE_STATUS_WD_MODIFIED as u32;
-        #[allow(missing_docs)]
         const WD_INDEX_MODIFIED =
                 raw::GIT_SUBMODULE_STATUS_WD_INDEX_MODIFIED as u32;
-        #[allow(missing_docs)]
-        const WD_WD_MODIFIED = raw::GIT_SUBMODULE_STATUS_WD_WD_MODIFIED as u32;
         #[allow(missing_docs)]
         const WD_UNTRACKED = raw::GIT_SUBMODULE_STATUS_WD_UNTRACKED as u32;
     }
 }
-
 impl SubmoduleStatus {
-    is_bit_set!(is_in_head, SubmoduleStatus::IN_HEAD);
-    is_bit_set!(is_in_index, SubmoduleStatus::IN_INDEX);
-    is_bit_set!(is_in_config, SubmoduleStatus::IN_CONFIG);
-    is_bit_set!(is_in_wd, SubmoduleStatus::IN_WD);
-    is_bit_set!(is_index_added, SubmoduleStatus::INDEX_ADDED);
-    is_bit_set!(is_index_deleted, SubmoduleStatus::INDEX_DELETED);
-    is_bit_set!(is_index_modified, SubmoduleStatus::INDEX_MODIFIED);
-    is_bit_set!(is_wd_uninitialized, SubmoduleStatus::WD_UNINITIALIZED);
-    is_bit_set!(is_wd_added, SubmoduleStatus::WD_ADDED);
-    is_bit_set!(is_wd_deleted, SubmoduleStatus::WD_DELETED);
-    is_bit_set!(is_wd_modified, SubmoduleStatus::WD_MODIFIED);
-    is_bit_set!(is_wd_wd_modified, SubmoduleStatus::WD_WD_MODIFIED);
-    is_bit_set!(is_wd_untracked, SubmoduleStatus::WD_UNTRACKED);
 }
-
 /// Submodule ignore values
-///
-/// These values represent settings for the `submodule.$name.ignore`
-/// configuration value which says how deeply to look at the working
-/// directory when getting the submodule status.
 pub enum SubmoduleIgnore {
     /// Use the submodule's configuration
     Unspecified,
@@ -1120,78 +1086,33 @@ pub enum SubmoduleIgnore {
     /// Never dirty
     All,
 }
-
 bitflags! {
     /// ...
     pub struct PathspecFlags: u32 {
         /// Use the default pathspec matching configuration.
         const DEFAULT = raw::GIT_PATHSPEC_DEFAULT as u32;
-        /// Force matching to ignore case, otherwise matching will use native
-        /// case sensitivity fo the platform filesystem.
-        const IGNORE_CASE = raw::GIT_PATHSPEC_IGNORE_CASE as u32;
-        /// Force case sensitive matches, otherwise match will use the native
-        /// case sensitivity of the platform filesystem.
-        const USE_CASE = raw::GIT_PATHSPEC_USE_CASE as u32;
-        /// Disable glob patterns and just use simple string comparison for
         /// matching.
-        const NO_GLOB = raw::GIT_PATHSPEC_NO_GLOB as u32;
-        /// Means that match functions return the error code `NotFound` if no
-        /// matches are found. By default no matches is a success.
-        const NO_MATCH_ERROR = raw::GIT_PATHSPEC_NO_MATCH_ERROR as u32;
-        /// Means that the list returned should track which patterns matched
-        /// which files so that at the end of the match we can identify patterns
-        /// that did not match any files.
-        const FIND_FAILURES = raw::GIT_PATHSPEC_FIND_FAILURES as u32;
         /// Means that the list returned does not need to keep the actual
-        /// matching filenames. Use this to just test if there were any matches
-        /// at all or in combination with `PATHSPEC_FAILURES` to validate a
-        /// pathspec.
         const FAILURES_ONLY = raw::GIT_PATHSPEC_FAILURES_ONLY as u32;
     }
 }
-
 impl PathspecFlags {
-    is_bit_set!(is_default, PathspecFlags::DEFAULT);
-    is_bit_set!(is_ignore_case, PathspecFlags::IGNORE_CASE);
-    is_bit_set!(is_use_case, PathspecFlags::USE_CASE);
-    is_bit_set!(is_no_glob, PathspecFlags::NO_GLOB);
-    is_bit_set!(is_no_match_error, PathspecFlags::NO_MATCH_ERROR);
-    is_bit_set!(is_find_failures, PathspecFlags::FIND_FAILURES);
-    is_bit_set!(is_failures_only, PathspecFlags::FAILURES_ONLY);
 }
-
 impl Default for PathspecFlags {
     fn default() -> Self {
         PathspecFlags::DEFAULT
     }
 }
-
 bitflags! {
     /// Types of notifications emitted from checkouts.
     pub struct CheckoutNotificationType: u32 {
-        /// Notification about a conflict.
-        const CONFLICT = raw::GIT_CHECKOUT_NOTIFY_CONFLICT as u32;
-        /// Notification about a dirty file.
-        const DIRTY = raw::GIT_CHECKOUT_NOTIFY_DIRTY as u32;
-        /// Notification about an updated file.
-        const UPDATED = raw::GIT_CHECKOUT_NOTIFY_UPDATED as u32;
-        /// Notification about an untracked file.
-        const UNTRACKED = raw::GIT_CHECKOUT_NOTIFY_UNTRACKED as u32;
         /// Notification about an ignored file.
         const IGNORED = raw::GIT_CHECKOUT_NOTIFY_IGNORED as u32;
     }
 }
-
 impl CheckoutNotificationType {
-    is_bit_set!(is_conflict, CheckoutNotificationType::CONFLICT);
-    is_bit_set!(is_dirty, CheckoutNotificationType::DIRTY);
-    is_bit_set!(is_updated, CheckoutNotificationType::UPDATED);
-    is_bit_set!(is_untracked, CheckoutNotificationType::UNTRACKED);
-    is_bit_set!(is_ignored, CheckoutNotificationType::IGNORED);
 }
-
 /// Possible output formats for diff data
-#[derive(Copy, Clone)]
 pub enum DiffFormat {
     /// full git diff
     Patch,
@@ -1204,32 +1125,15 @@ pub enum DiffFormat {
     /// like git diff --name-status
     NameStatus,
 }
-
 bitflags! {
     /// Formatting options for diff stats
     pub struct DiffStatsFormat: raw::git_diff_stats_format_t {
-        /// Don't generate any stats
-        const NONE = raw::GIT_DIFF_STATS_NONE;
-        /// Equivalent of `--stat` in git
-        const FULL = raw::GIT_DIFF_STATS_FULL;
-        /// Equivalent of `--shortstat` in git
-        const SHORT = raw::GIT_DIFF_STATS_SHORT;
-        /// Equivalent of `--numstat` in git
-        const NUMBER = raw::GIT_DIFF_STATS_NUMBER;
         /// Extended header information such as creations, renames and mode
-        /// changes, equivalent of `--summary` in git
         const INCLUDE_SUMMARY = raw::GIT_DIFF_STATS_INCLUDE_SUMMARY;
     }
 }
-
 impl DiffStatsFormat {
-    is_bit_set!(is_none, DiffStatsFormat::NONE);
-    is_bit_set!(is_full, DiffStatsFormat::FULL);
-    is_bit_set!(is_short, DiffStatsFormat::SHORT);
-    is_bit_set!(is_number, DiffStatsFormat::NUMBER);
-    is_bit_set!(is_include_summary, DiffStatsFormat::INCLUDE_SUMMARY);
 }
-
 /// Automatic tag following options.
 pub enum AutotagOption {
     /// Use the setting from the remote's configuration
@@ -1241,7 +1145,6 @@ pub enum AutotagOption {
     /// Ask for all the tags
     All,
 }
-
 /// Configuration for how pruning is done on a fetch
 pub enum FetchPrune {
     /// Use the setting from the configuration
@@ -1251,89 +1154,51 @@ pub enum FetchPrune {
     /// Force pruning off
     Off,
 }
-
 #[allow(missing_docs)]
-#[derive(Debug)]
 pub enum StashApplyProgress {
-    /// None
     None,
-    /// Loading the stashed data from the object database
     LoadingStash,
-    /// The stored index is being analyzed
     AnalyzeIndex,
-    /// The modified files are being analyzed
     AnalyzeModified,
-    /// The untracked and ignored files are being analyzed
     AnalyzeUntracked,
-    /// The untracked files are being written to disk
     CheckoutUntracked,
-    /// The modified files are being written to disk
     CheckoutModified,
-    /// The stash was applied successfully
     Done,
 }
-
 bitflags! {
     #[allow(missing_docs)]
     pub struct StashApplyFlags: u32 {
         #[allow(missing_docs)]
         const DEFAULT = raw::GIT_STASH_APPLY_DEFAULT as u32;
         /// Try to reinstate not only the working tree's changes,
-        /// but also the index's changes.
         const REINSTATE_INDEX = raw::GIT_STASH_APPLY_REINSTATE_INDEX as u32;
     }
 }
-
 impl StashApplyFlags {
-    is_bit_set!(is_default, StashApplyFlags::DEFAULT);
-    is_bit_set!(is_reinstate_index, StashApplyFlags::REINSTATE_INDEX);
 }
-
 impl Default for StashApplyFlags {
     fn default() -> Self {
         StashApplyFlags::DEFAULT
     }
 }
-
 bitflags! {
     #[allow(missing_docs)]
     pub struct StashFlags: u32 {
         #[allow(missing_docs)]
         const DEFAULT = raw::GIT_STASH_DEFAULT as u32;
-        /// All changes already added to the index are left intact in
-        /// the working directory
-        const KEEP_INDEX = raw::GIT_STASH_KEEP_INDEX as u32;
-        /// All untracked files are also stashed and then cleaned up
-        /// from the working directory
-        const INCLUDE_UNTRACKED = raw::GIT_STASH_INCLUDE_UNTRACKED as u32;
         /// All ignored files are also stashed and then cleaned up from
-        /// the working directory
         const INCLUDE_IGNORED = raw::GIT_STASH_INCLUDE_IGNORED as u32;
     }
 }
-
 impl StashFlags {
-    is_bit_set!(is_default, StashFlags::DEFAULT);
-    is_bit_set!(is_keep_index, StashFlags::KEEP_INDEX);
-    is_bit_set!(is_include_untracked, StashFlags::INCLUDE_UNTRACKED);
-    is_bit_set!(is_include_ignored, StashFlags::INCLUDE_IGNORED);
 }
-
 impl Default for StashFlags {
     fn default() -> Self {
         StashFlags::DEFAULT
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use super::ObjectType;
-
-    #[test]
     fn convert() {
-        assert_eq!(ObjectType::Blob.str(), "blob");
-        assert_eq!(ObjectType::from_str("blob"), Some(ObjectType::Blob));
-        assert!(ObjectType::Blob.is_loose());
     }
-
 }

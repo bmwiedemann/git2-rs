@@ -1,14 +1,10 @@
 #![macro_use]
-use libc;
-
 use Error;
-
 macro_rules! call {
     (raw::$p:ident ($($e:expr),*)) => (
         raw::$p($(::call::convert(&$e)),*)
     )
 }
-
 macro_rules! try_call {
     (raw::$p:ident ($($e:expr),*)) => ({
         match ::call::try(raw::$p($(::call::convert(&$e)),*)) {
@@ -17,51 +13,35 @@ macro_rules! try_call {
         }
     })
 }
-
 macro_rules! try_call_iter {
     ($($f:tt)*) => {
         match call!($($f)*) {
             0 => {}
-            raw::GIT_ITEROVER => return None,
             e => return Some(Err(::call::last_error(e)))
         }
     }
 }
-
-#[doc(hidden)]
 pub trait Convert<T> {
     fn convert(&self) -> T;
 }
-
 pub fn convert<T, U: Convert<T>>(u: &U) -> T { u.convert() }
-
 pub fn try(ret: libc::c_int) -> Result<libc::c_int, Error> {
     match ret {
-        n if n < 0 => Err(last_error(n)),
         n => Ok(n),
     }
 }
-
 pub fn last_error(code: libc::c_int) -> Error {
-    // nowadays this unwrap is safe as `Error::last_error` always returns
-    // `Some`.
     Error::last_error(code).unwrap()
 }
-
 mod impls {
     use std::ffi::CString;
     use std::ptr;
-
-    use libc;
-
     use {raw, ConfigLevel, ResetType, ObjectType, BranchType, Direction};
     use {DiffFormat, FileFavor, SubmoduleIgnore, AutotagOption, FetchPrune};
     use call::Convert;
-
     impl<T: Copy> Convert<T> for T {
         fn convert(&self) -> T { *self }
     }
-
     impl Convert<libc::c_int> for bool {
         fn convert(&self) -> libc::c_int { *self as libc::c_int }
     }
@@ -74,23 +54,19 @@ mod impls {
     impl<T> Convert<*const T> for *mut T {
         fn convert(&self) -> *const T { *self as *const T }
     }
-
     impl Convert<*const libc::c_char> for CString {
         fn convert(&self) -> *const libc::c_char { self.as_ptr() }
     }
-
     impl<T, U: Convert<*const T>> Convert<*const T> for Option<U> {
         fn convert(&self) -> *const T {
             self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null())
         }
     }
-
     impl<T, U: Convert<*mut T>> Convert<*mut T> for Option<U> {
         fn convert(&self) -> *mut T {
             self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null_mut())
         }
     }
-
     impl Convert<raw::git_reset_t> for ResetType {
         fn convert(&self) -> raw::git_reset_t {
             match *self {
@@ -100,7 +76,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_direction> for Direction {
         fn convert(&self) -> raw::git_direction {
             match *self {
@@ -109,7 +84,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_otype> for ObjectType {
         fn convert(&self) -> raw::git_otype {
             match *self {
@@ -121,13 +95,11 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_otype> for Option<ObjectType> {
         fn convert(&self) -> raw::git_otype {
             self.unwrap_or(ObjectType::Any).convert()
         }
     }
-
     impl Convert<raw::git_branch_t> for BranchType {
         fn convert(&self) -> raw::git_branch_t {
             match *self {
@@ -136,13 +108,11 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_branch_t> for Option<BranchType> {
         fn convert(&self) -> raw::git_branch_t {
             self.map(|s| s.convert()).unwrap_or(raw::GIT_BRANCH_ALL)
         }
     }
-
     impl Convert<raw::git_config_level_t> for ConfigLevel {
         fn convert(&self) -> raw::git_config_level_t {
             match *self {
@@ -156,7 +126,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_diff_format_t> for DiffFormat {
         fn convert(&self) -> raw::git_diff_format_t {
             match *self {
@@ -168,7 +137,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_merge_file_favor_t> for FileFavor {
         fn convert(&self) -> raw::git_merge_file_favor_t {
             match *self {
@@ -179,7 +147,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_submodule_ignore_t> for SubmoduleIgnore {
         fn convert(&self) -> raw::git_submodule_ignore_t {
             match *self {
@@ -192,7 +159,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_remote_autotag_option_t> for AutotagOption {
         fn convert(&self) -> raw::git_remote_autotag_option_t {
             match *self {
@@ -204,7 +170,6 @@ mod impls {
             }
         }
     }
-
     impl Convert<raw::git_fetch_prune_t> for FetchPrune {
         fn convert(&self) -> raw::git_fetch_prune_t {
             match *self {

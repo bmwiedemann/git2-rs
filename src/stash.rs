@@ -11,11 +11,6 @@ pub struct StashApplyOptions<'cb> {
     checkout_options: Option<CheckoutBuilder<'cb>>,
     raw_opts: raw::git_stash_apply_options
 }
-impl<'cb> Default for StashApplyOptions<'cb> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 impl<'cb> StashApplyOptions<'cb> {
     pub fn new() -> StashApplyOptions<'cb> {
         let mut opts = StashApplyOptions {
@@ -28,25 +23,7 @@ impl<'cb> StashApplyOptions<'cb> {
         }, 0);
         opts
     }
-    pub fn reinstantiate_index(&mut self) -> &mut StashApplyOptions<'cb> {
-        self
-    }
-    pub fn checkout_options(&mut self, opts: CheckoutBuilder<'cb>) -> &mut StashApplyOptions<'cb> {
-        self.checkout_options = Some(opts);
-        self
-    }
-    pub fn progress_cb<C>(&mut self, callback: C) -> &mut StashApplyOptions<'cb>
-        where C: FnMut(StashApplyProgress) -> bool + 'cb
-    {
-        self.progress = Some(Box::new(callback) as Box<StashApplyProgressCb<'cb>>);
-        self
-    }
     pub fn raw(&mut self) -> &raw::git_stash_apply_options {
-        unsafe {
-            if let Some(opts) = self.checkout_options.as_mut() {
-                opts.configure(&mut self.raw_opts.checkout_options);
-            }
-        }
         &self.raw_opts
     }
 }
@@ -89,29 +66,4 @@ extern fn stash_apply_progress_cb(progress: raw::git_stash_apply_progress_t,
         };
         if res { 0 } else { -1 }
     }).unwrap_or(-1)
-}
-#[cfg(test)]
-mod tests {
-    fn make_stash<C>(next: C) where C: FnOnce(&mut Repository) {
-        fs::File::create(&p).unwrap()
-            .write("data".as_bytes()).unwrap();
-        repo.stash_foreach(|index, name, _oid| {
-        }).unwrap();
-    }
-    fn count_stash(repo: &mut Repository) -> usize {
-    }
-    fn smoke_stash_save_drop() {
-        make_stash(|repo| {
-        })
-    }
-    fn smoke_stash_save_pop() {
-        make_stash(|repo| {
-        })
-    }
-    fn smoke_stash_save_apply() {
-        make_stash(|repo| {
-            options.progress_cb(|progress| {
-            });
-        })
-    }
 }

@@ -240,7 +240,6 @@ mod time;
 mod tree;
 mod treebuilder;
 fn init() {
-    static INIT: Once = ONCE_INIT;
 }
 unsafe fn opt_bytes<'a, T>(_anchor: &'a T,
                            c: *const libc::c_char) -> Option<&'a [u8]> {
@@ -357,13 +356,6 @@ pub enum FetchPrune {
 }
 pub enum StashApplyProgress {
     None,
-    LoadingStash,
-    AnalyzeIndex,
-    AnalyzeModified,
-    AnalyzeUntracked,
-    CheckoutUntracked,
-    CheckoutModified,
-    Done,
 }
 bitflags! {
     pub struct StashFlags: u32 {

@@ -16,7 +16,6 @@ pub use config::{Config, ConfigEntry, ConfigEntries};
 pub use cred::{Cred, CredentialHelper};
 pub use describe::{Describe, DescribeFormatOptions, DescribeOptions};
 pub use diff::{Diff, DiffDelta, DiffFile, DiffOptions, Deltas};
-pub use diff::{DiffLine, DiffHunk, DiffStats, DiffFindOptions};
 pub use error::Error;
 pub use index::{Index, IndexEntry, IndexEntries, IndexMatchedPath};
 pub use merge::{AnnotatedCommit, MergeOptions};
@@ -46,9 +45,6 @@ pub use odb::{Odb, OdbObject, OdbReader, OdbWriter};
 pub use util::IntoCString;
 macro_rules! is_bit_set {
     ($name:ident, $flag:expr) => (
-        pub fn $name(&self) -> bool {
-            self.intersects($flag)
-        }
     )
 }
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
@@ -142,8 +138,6 @@ pub enum ObjectType {
     Tag,
 }
 pub enum ReferenceType {
-    Oid,
-    Symbolic,
 }
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum BranchType {
@@ -178,29 +172,9 @@ bitflags! {
         const DEFAULT = raw::GIT_CREDTYPE_DEFAULT as u32;
     }
 }
-impl Default for CredentialType {
-    fn default() -> Self {
-        CredentialType::DEFAULT
-    }
-}
-bitflags! {
-    pub struct IndexEntryFlag: u16 {
-        const EXTENDED = raw::GIT_IDXENTRY_EXTENDED as u16;
-    }
-}
-bitflags! {
-    pub struct IndexEntryExtendedFlag: u16 {
-        const INTENT_TO_ADD = raw::GIT_IDXENTRY_INTENT_TO_ADD as u16;
-    }
-}
 bitflags! {
     pub struct IndexAddOption: u32 {
         const DEFAULT = raw::GIT_INDEX_ADD_DEFAULT as u32;
-    }
-}
-impl Default for IndexAddOption {
-    fn default() -> Self {
-        IndexAddOption::DEFAULT
     }
 }
 bitflags! {
@@ -242,14 +216,11 @@ mod diff;
 mod error;
 mod index;
 mod merge;
-mod message;
 mod note;
 mod object;
 mod odb;
 mod oid;
 mod packbuilder;
-mod pathspec;
-mod patch;
 mod proxy_options;
 mod rebase;
 mod reference;
@@ -293,9 +264,6 @@ impl ObjectType {
             str::from_utf8(data).unwrap()
         }
     }
-    pub fn is_loose(&self) -> bool {
-        unsafe { (call!(raw::git_object_typeisloose(*self)) == 1) }
-    }
     pub fn from_raw(raw: raw::git_otype) -> Option<ObjectType> {
         match raw {
             _ => None,
@@ -304,10 +272,6 @@ impl ObjectType {
     pub fn raw(&self) -> raw::git_otype {
         call::convert(self)
     }
-    pub fn from_str(s: &str) -> Option<ObjectType> {
-        let raw = unsafe { call!(raw::git_object_string2type(CString::new(s).unwrap())) };
-        ObjectType::from_raw(raw)
-    }
 }
 impl fmt::Display for ObjectType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -315,21 +279,10 @@ impl fmt::Display for ObjectType {
     }
 }
 impl ReferenceType {
-    pub fn str(&self) -> &'static str {
-        match self {
-            &ReferenceType::Oid => "oid",
-            &ReferenceType::Symbolic => "symbolic",
-        }
-    }
     pub fn from_raw(raw: raw::git_ref_t) -> Option<ReferenceType> {
         match raw {
             _ => None,
         }
-    }
-}
-impl fmt::Display for ReferenceType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.str().fmt(f)
     }
 }
 impl ConfigLevel {
@@ -375,11 +328,6 @@ pub enum SubmoduleIgnore {
     All,
 }
 bitflags! {
-    pub struct PathspecFlags: u32 {
-        const DEFAULT = raw::GIT_PATHSPEC_DEFAULT as u32;
-    }
-}
-bitflags! {
     pub struct CheckoutNotificationType: u32 {
         const IGNORED = raw::GIT_CHECKOUT_NOTIFY_IGNORED as u32;
     }
@@ -416,11 +364,6 @@ pub enum StashApplyProgress {
     CheckoutUntracked,
     CheckoutModified,
     Done,
-}
-bitflags! {
-    pub struct StashApplyFlags: u32 {
-        const DEFAULT = raw::GIT_STASH_APPLY_DEFAULT as u32;
-    }
 }
 bitflags! {
     pub struct StashFlags: u32 {

@@ -65,8 +65,6 @@
 
 #![doc(html_root_url = "https://docs.rs/git2/0.6")]
 #![allow(trivial_numeric_casts, trivial_casts)]
-#![deny(missing_docs)]
-#![cfg_attr(test, deny(warnings))]
 
 extern crate libc;
 extern crate url;
@@ -1166,11 +1164,8 @@ pub enum StashApplyProgress {
     Done,
 }
 bitflags! {
-    #[allow(missing_docs)]
     pub struct StashApplyFlags: u32 {
-        #[allow(missing_docs)]
         const DEFAULT = raw::GIT_STASH_APPLY_DEFAULT as u32;
-        /// Try to reinstate not only the working tree's changes,
         const REINSTATE_INDEX = raw::GIT_STASH_APPLY_REINSTATE_INDEX as u32;
     }
 }
@@ -1182,11 +1177,8 @@ impl Default for StashApplyFlags {
     }
 }
 bitflags! {
-    #[allow(missing_docs)]
     pub struct StashFlags: u32 {
-        #[allow(missing_docs)]
         const DEFAULT = raw::GIT_STASH_DEFAULT as u32;
-        /// All ignored files are also stashed and then cleaned up from
         const INCLUDE_IGNORED = raw::GIT_STASH_INCLUDE_IGNORED as u32;
     }
 }
@@ -1195,10 +1187,5 @@ impl StashFlags {
 impl Default for StashFlags {
     fn default() -> Self {
         StashFlags::DEFAULT
-    }
-}
-#[cfg(test)]
-mod tests {
-    fn convert() {
     }
 }

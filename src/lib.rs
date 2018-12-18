@@ -384,10 +384,6 @@ mod tree;
 mod treebuilder;
 fn init() {
     static INIT: Once = ONCE_INIT;
-    INIT.call_once(|| {
-        openssl_env_init();
-    });
-    raw::init();
 }
 #[cfg(all(unix, not(target_os = "macos"), not(target_os = "ios"), feature = "https"))]
 fn openssl_env_init() {
@@ -495,21 +491,10 @@ bitflags! {
         const CONFLICTED = raw::GIT_STATUS_CONFLICTED as u32;
     }
 }
-impl Status {
-    is_bit_set!(is_index_new, Status::INDEX_NEW);
-    is_bit_set!(is_index_modified, Status::INDEX_MODIFIED);
-    is_bit_set!(is_index_deleted, Status::INDEX_DELETED);
-    is_bit_set!(is_index_renamed, Status::INDEX_RENAMED);
-    is_bit_set!(is_index_typechange, Status::INDEX_TYPECHANGE);
-    is_bit_set!(is_wt_new, Status::WT_NEW);
-    is_bit_set!(is_wt_modified, Status::WT_MODIFIED);
-}
 bitflags! {
     pub struct RepositoryInitMode: u32 {
         const SHARED_UMASK = raw::GIT_REPOSITORY_INIT_SHARED_UMASK as u32;
     }
-}
-impl RepositoryInitMode {
 }
 pub enum Delta {
     Unmodified,
@@ -527,13 +512,7 @@ pub enum Delta {
 bitflags! {
     pub struct SubmoduleStatus: u32 {
         const IN_INDEX = raw::GIT_SUBMODULE_STATUS_IN_INDEX as u32;
-        const WD_UNINITIALIZED =
-                raw::GIT_SUBMODULE_STATUS_WD_UNINITIALIZED as u32;
-        const WD_INDEX_MODIFIED =
-                raw::GIT_SUBMODULE_STATUS_WD_INDEX_MODIFIED as u32;
     }
-}
-impl SubmoduleStatus {
 }
 pub enum SubmoduleIgnore {
     Unspecified,
@@ -547,19 +526,10 @@ bitflags! {
         const DEFAULT = raw::GIT_PATHSPEC_DEFAULT as u32;
     }
 }
-impl PathspecFlags {
-}
-impl Default for PathspecFlags {
-    fn default() -> Self {
-        PathspecFlags::DEFAULT
-    }
-}
 bitflags! {
     pub struct CheckoutNotificationType: u32 {
         const IGNORED = raw::GIT_CHECKOUT_NOTIFY_IGNORED as u32;
     }
-}
-impl CheckoutNotificationType {
 }
 pub enum DiffFormat {
     Patch,
@@ -572,8 +542,6 @@ bitflags! {
     pub struct DiffStatsFormat: raw::git_diff_stats_format_t {
         const INCLUDE_SUMMARY = raw::GIT_DIFF_STATS_INCLUDE_SUMMARY;
     }
-}
-impl DiffStatsFormat {
 }
 pub enum AutotagOption {
     Unspecified,

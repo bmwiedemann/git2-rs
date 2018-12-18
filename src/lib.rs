@@ -54,7 +54,6 @@ pub use odb::{Odb, OdbObject, OdbReader, OdbWriter};
 pub use util::IntoCString;
 macro_rules! is_bit_set {
     ($name:ident, $flag:expr) => (
-        #[allow(missing_docs)]
         pub fn $name(&self) -> bool {
             self.intersects($flag)
         }
@@ -120,7 +119,6 @@ pub enum ErrorClass {
     Filesystem,
 }
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
-#[allow(missing_docs)]
 pub enum RepositoryState {
     Clean,
     Merge,
@@ -197,19 +195,12 @@ impl Sort {
 }
 bitflags! {
     pub struct CredentialType: u32 {
-        #[allow(missing_docs)]
         const USER_PASS_PLAINTEXT = raw::GIT_CREDTYPE_USERPASS_PLAINTEXT as u32;
-        #[allow(missing_docs)]
         const SSH_KEY = raw::GIT_CREDTYPE_SSH_KEY as u32;
-        #[allow(missing_docs)]
         const SSH_MEMORY = raw::GIT_CREDTYPE_SSH_MEMORY as u32;
-        #[allow(missing_docs)]
         const SSH_CUSTOM = raw::GIT_CREDTYPE_SSH_CUSTOM as u32;
-        #[allow(missing_docs)]
         const DEFAULT = raw::GIT_CREDTYPE_DEFAULT as u32;
-        #[allow(missing_docs)]
         const SSH_INTERACTIVE = raw::GIT_CREDTYPE_SSH_INTERACTIVE as u32;
-        #[allow(missing_docs)]
         const USERNAME = raw::GIT_CREDTYPE_USERNAME as u32;
     }
 }
@@ -242,25 +233,15 @@ bitflags! {
         const INTENT_TO_ADD = raw::GIT_IDXENTRY_INTENT_TO_ADD as u16;
         const SKIP_WORKTREE = raw::GIT_IDXENTRY_SKIP_WORKTREE as u16;
         const EXTENDED2 = raw::GIT_IDXENTRY_EXTENDED2 as u16;
-        #[allow(missing_docs)]
         const UPDATE = raw::GIT_IDXENTRY_UPDATE as u16;
-        #[allow(missing_docs)]
         const REMOVE = raw::GIT_IDXENTRY_REMOVE as u16;
-        #[allow(missing_docs)]
         const UPTODATE = raw::GIT_IDXENTRY_UPTODATE as u16;
-        #[allow(missing_docs)]
         const ADDED = raw::GIT_IDXENTRY_ADDED as u16;
-        #[allow(missing_docs)]
         const HASHED = raw::GIT_IDXENTRY_HASHED as u16;
-        #[allow(missing_docs)]
         const UNHASHED = raw::GIT_IDXENTRY_UNHASHED as u16;
-        #[allow(missing_docs)]
         const WT_REMOVE = raw::GIT_IDXENTRY_WT_REMOVE as u16;
-        #[allow(missing_docs)]
         const CONFLICTED = raw::GIT_IDXENTRY_CONFLICTED as u16;
-        #[allow(missing_docs)]
         const UNPACKED = raw::GIT_IDXENTRY_UNPACKED as u16;
-        #[allow(missing_docs)]
         const NEW_SKIP_WORKTREE = raw::GIT_IDXENTRY_NEW_SKIP_WORKTREE as u16;
     }
 }
@@ -281,14 +262,10 @@ impl IndexEntryExtendedFlag {
 }
 bitflags! {
     pub struct IndexAddOption: u32 {
-        #[allow(missing_docs)]
         const DEFAULT = raw::GIT_INDEX_ADD_DEFAULT as u32;
-        #[allow(missing_docs)]
         const FORCE = raw::GIT_INDEX_ADD_FORCE as u32;
-        #[allow(missing_docs)]
         const DISABLE_PATHSPEC_MATCH =
                 raw::GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH as u32;
-        #[allow(missing_docs)]
         const CHECK_PATHSPEC = raw::GIT_INDEX_ADD_CHECK_PATHSPEC as u32;
     }
 }
@@ -503,31 +480,18 @@ impl ConfigLevel {
 }
 bitflags! {
     pub struct Status: u32 {
-        #[allow(missing_docs)]
         const CURRENT = raw::GIT_STATUS_CURRENT as u32;
-        #[allow(missing_docs)]
         const INDEX_NEW = raw::GIT_STATUS_INDEX_NEW as u32;
-        #[allow(missing_docs)]
         const INDEX_MODIFIED = raw::GIT_STATUS_INDEX_MODIFIED as u32;
-        #[allow(missing_docs)]
         const INDEX_DELETED = raw::GIT_STATUS_INDEX_DELETED as u32;
-        #[allow(missing_docs)]
         const INDEX_RENAMED = raw::GIT_STATUS_INDEX_RENAMED as u32;
-        #[allow(missing_docs)]
         const INDEX_TYPECHANGE = raw::GIT_STATUS_INDEX_TYPECHANGE as u32;
-        #[allow(missing_docs)]
         const WT_NEW = raw::GIT_STATUS_WT_NEW as u32;
-        #[allow(missing_docs)]
         const WT_MODIFIED = raw::GIT_STATUS_WT_MODIFIED as u32;
-        #[allow(missing_docs)]
         const WT_DELETED = raw::GIT_STATUS_WT_DELETED as u32;
-        #[allow(missing_docs)]
         const WT_TYPECHANGE = raw::GIT_STATUS_WT_TYPECHANGE as u32;
-        #[allow(missing_docs)]
         const WT_RENAMED = raw::GIT_STATUS_WT_RENAMED as u32;
-        #[allow(missing_docs)]
         const IGNORED = raw::GIT_STATUS_IGNORED as u32;
-        #[allow(missing_docs)]
         const CONFLICTED = raw::GIT_STATUS_CONFLICTED as u32;
     }
 }
@@ -573,20 +537,13 @@ pub enum Delta {
 }
 bitflags! {
     pub struct SubmoduleStatus: u32 {
-        #[allow(missing_docs)]
         const IN_HEAD = raw::GIT_SUBMODULE_STATUS_IN_HEAD as u32;
-        #[allow(missing_docs)]
         const IN_INDEX = raw::GIT_SUBMODULE_STATUS_IN_INDEX as u32;
-        #[allow(missing_docs)]
         const IN_CONFIG = raw::GIT_SUBMODULE_STATUS_IN_CONFIG as u32;
-        #[allow(missing_docs)]
-        #[allow(missing_docs)]
         const WD_UNINITIALIZED =
                 raw::GIT_SUBMODULE_STATUS_WD_UNINITIALIZED as u32;
-        #[allow(missing_docs)]
         const WD_INDEX_MODIFIED =
                 raw::GIT_SUBMODULE_STATUS_WD_INDEX_MODIFIED as u32;
-        #[allow(missing_docs)]
         const WD_UNTRACKED = raw::GIT_SUBMODULE_STATUS_WD_UNTRACKED as u32;
     }
 }
@@ -644,7 +601,6 @@ pub enum FetchPrune {
     On,
     Off,
 }
-#[allow(missing_docs)]
 pub enum StashApplyProgress {
     None,
     LoadingStash,
@@ -658,12 +614,10 @@ pub enum StashApplyProgress {
 bitflags! {
     pub struct StashApplyFlags: u32 {
         const DEFAULT = raw::GIT_STASH_APPLY_DEFAULT as u32;
-        const REINSTATE_INDEX = raw::GIT_STASH_APPLY_REINSTATE_INDEX as u32;
     }
 }
 bitflags! {
     pub struct StashFlags: u32 {
         const DEFAULT = raw::GIT_STASH_DEFAULT as u32;
-        const INCLUDE_IGNORED = raw::GIT_STASH_INCLUDE_IGNORED as u32;
     }
 }

@@ -38,9 +38,6 @@ mod impls {
     impl Convert<libc::c_int> for bool {
         fn convert(&self) -> libc::c_int { *self as libc::c_int }
     }
-    impl<'a, T> Convert<*const T> for &'a T {
-        fn convert(&self) -> *const T { *self as *const T }
-    }
     impl<'a, T> Convert<*mut T> for &'a mut T {
         fn convert(&self) -> *mut T { &**self as *const T as *mut T }
     }

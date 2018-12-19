@@ -4,7 +4,6 @@ extern crate libgit2_sys as raw;
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate log;
 use std::ffi::{CStr, CString};
-use std::fmt;
 use std::str;
 pub use blame::{Blame, BlameHunk, BlameIter, BlameOptions};
 pub use blob::{Blob, BlobWriter};
@@ -42,10 +41,6 @@ pub use tree::{Tree, TreeEntry, TreeIter, TreeWalkMode, TreeWalkResult};
 pub use treebuilder::TreeBuilder;
 pub use odb::{Odb, OdbObject, OdbReader, OdbWriter};
 pub use util::IntoCString;
-macro_rules! is_bit_set {
-    ($name:ident, $flag:expr) => (
-    )
-}
 pub enum ErrorCode {
 }
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
@@ -74,7 +69,6 @@ pub enum ObjectType {
 }
 pub enum ReferenceType {
 }
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum BranchType {
     Local,
     Remote,
@@ -204,11 +198,6 @@ impl ObjectType {
         call::convert(self)
     }
 }
-impl fmt::Display for ObjectType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.str().fmt(f)
-    }
-}
 impl ReferenceType {
     pub fn from_raw(raw: raw::git_ref_t) -> Option<ReferenceType> {
         match raw {
@@ -258,11 +247,6 @@ pub enum DiffFormat {
     Raw,
     NameOnly,
     NameStatus,
-}
-bitflags! {
-    pub struct DiffStatsFormat: raw::git_diff_stats_format_t {
-        const INCLUDE_SUMMARY = raw::GIT_DIFF_STATS_INCLUDE_SUMMARY;
-    }
 }
 pub enum AutotagOption {
     Unspecified,

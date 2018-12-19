@@ -23,14 +23,10 @@ impl<'cb> StashApplyOptions<'cb> {
         }, 0);
         opts
     }
-    pub fn raw(&mut self) -> &raw::git_stash_apply_options {
-        &self.raw_opts
-    }
 }
 pub struct StashCbData<'a> {
     pub callback: &'a mut StashCb<'a>
 }
-#[allow(unused)]
 pub extern fn stash_cb(index: size_t,
                         message: *const c_char,
                         stash_id: *const raw::git_oid,
@@ -53,7 +49,6 @@ fn convert_progress(progress: raw::git_stash_apply_progress_t) -> StashApplyProg
         _ => StashApplyProgress::None
     }
 }
-#[allow(unused)]
 extern fn stash_apply_progress_cb(progress: raw::git_stash_apply_progress_t,
                                   payload: *mut c_void)
                                   -> c_int

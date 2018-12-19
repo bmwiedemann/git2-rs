@@ -471,10 +471,8 @@ impl<'cfg> Binding for ConfigEntry<'cfg> {
     }
     fn raw(&self) -> *mut raw::git_config_entry { self.raw }
 }
-
 impl<'cfg> Binding for ConfigEntries<'cfg> {
     type Raw = *mut raw::git_config_iterator;
-
     unsafe fn from_raw(raw: *mut raw::git_config_iterator)
                            -> ConfigEntries<'cfg> {
         ConfigEntries {
@@ -484,18 +482,11 @@ impl<'cfg> Binding for ConfigEntries<'cfg> {
     }
     fn raw(&self) -> *mut raw::git_config_iterator { self.raw }
 }
-
-// entries are only valid until the iterator is freed, so this impl is for
-// `&'b T` instead of `T` to have a lifetime to tie them to.
-//
-// It's also not implemented for `&'b mut T` so we can have multiple entries
-// (ok).
 impl<'cfg, 'b> Iterator for &'b ConfigEntries<'cfg> {
     type Item = Result<ConfigEntry<'b>, Error>;
     fn next(&mut self) -> Option<Result<ConfigEntry<'b>, Error>> {
         let mut raw = ptr::null_mut();
         unsafe {
-            try_call_iter!(raw::git_config_next(&mut raw, self.raw));
             Some(Ok(ConfigEntry {
                 owned: false,
                 raw: raw,
@@ -504,125 +495,7 @@ impl<'cfg, 'b> Iterator for &'b ConfigEntries<'cfg> {
         }
     }
 }
-
-impl<'cfg> Drop for ConfigEntries<'cfg> {
-    fn drop(&mut self) {
-        unsafe { raw::git_config_iterator_free(self.raw) }
-    }
-}
-
 impl<'cfg> Drop for ConfigEntry<'cfg> {
     fn drop(&mut self) {
-        if self.owned {
-            unsafe { raw::git_config_entry_free(self.raw) }
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::fs::File;
-    use tempdir::TempDir;
-
-    use Config;
-
-    #[test]
-    fn smoke() {
-        let _cfg = Config::new().unwrap();
-        let _ = Config::find_global();
-        let _ = Config::find_system();
-        let _ = Config::find_xdg();
-    }
-
-    #[test]
-    fn persisted() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path().join("foo");
-        File::create(&path).unwrap();
-
-        let mut cfg = Config::open(&path).unwrap();
-        assert!(cfg.get_bool("foo.bar").is_err());
-        cfg.set_bool("foo.k1", true).unwrap();
-        cfg.set_i32("foo.k2", 1).unwrap();
-        cfg.set_i64("foo.k3", 2).unwrap();
-        cfg.set_str("foo.k4", "bar").unwrap();
-        cfg.snapshot().unwrap();
-        drop(cfg);
-
-        let cfg = Config::open(&path).unwrap().snapshot().unwrap();
-        assert_eq!(cfg.get_bool("foo.k1").unwrap(), true);
-        assert_eq!(cfg.get_i32("foo.k2").unwrap(), 1);
-        assert_eq!(cfg.get_i64("foo.k3").unwrap(), 2);
-        assert_eq!(cfg.get_str("foo.k4").unwrap(), "bar");
-
-        for entry in &cfg.entries(None).unwrap() {
-            let entry = entry.unwrap();
-            entry.name();
-            entry.value();
-            entry.level();
-        }
-    }
-
-    #[test]
-    fn multivar() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path().join("foo");
-        File::create(&path).unwrap();
-
-        let mut cfg = Config::open(&path).unwrap();
-        cfg.set_multivar("foo.bar", "^$", "baz").unwrap();
-        cfg.set_multivar("foo.bar", "^$", "qux").unwrap();
-
-        let mut values: Vec<String> = cfg.entries(None)
-            .unwrap()
-            .into_iter()
-            .map(|entry| entry.unwrap().value().unwrap().into())
-            .collect();
-        values.sort();
-        assert_eq!(values, ["baz", "qux"]);
-
-        cfg.remove_multivar("foo.bar", ".*").unwrap();
-
-        assert_eq!(cfg.entries(None).unwrap().count(), 0);
-    }
-
-    #[test]
-    fn parse() {
-        assert_eq!(Config::parse_bool("").unwrap(), false);
-        assert_eq!(Config::parse_bool("false").unwrap(), false);
-        assert_eq!(Config::parse_bool("no").unwrap(), false);
-        assert_eq!(Config::parse_bool("off").unwrap(), false);
-        assert_eq!(Config::parse_bool("0").unwrap(), false);
-
-        assert_eq!(Config::parse_bool("true").unwrap(), true);
-        assert_eq!(Config::parse_bool("yes").unwrap(), true);
-        assert_eq!(Config::parse_bool("on").unwrap(), true);
-        assert_eq!(Config::parse_bool("1").unwrap(), true);
-        assert_eq!(Config::parse_bool("42").unwrap(), true);
-
-        assert!(Config::parse_bool(" ").is_err());
-        assert!(Config::parse_bool("some-string").is_err());
-        assert!(Config::parse_bool("-").is_err());
-
-        assert_eq!(Config::parse_i32("0").unwrap(), 0);
-        assert_eq!(Config::parse_i32("1").unwrap(), 1);
-        assert_eq!(Config::parse_i32("100").unwrap(), 100);
-        assert_eq!(Config::parse_i32("-1").unwrap(), -1);
-        assert_eq!(Config::parse_i32("-100").unwrap(), -100);
-        assert_eq!(Config::parse_i32("1k").unwrap(), 1024);
-        assert_eq!(Config::parse_i32("4k").unwrap(), 4096);
-        assert_eq!(Config::parse_i32("1M").unwrap(), 1048576);
-        assert_eq!(Config::parse_i32("1G").unwrap(), 1024*1024*1024);
-
-        assert_eq!(Config::parse_i64("0").unwrap(), 0);
-        assert_eq!(Config::parse_i64("1").unwrap(), 1);
-        assert_eq!(Config::parse_i64("100").unwrap(), 100);
-        assert_eq!(Config::parse_i64("-1").unwrap(), -1);
-        assert_eq!(Config::parse_i64("-100").unwrap(), -100);
-        assert_eq!(Config::parse_i64("1k").unwrap(), 1024);
-        assert_eq!(Config::parse_i64("4k").unwrap(), 4096);
-        assert_eq!(Config::parse_i64("1M").unwrap(), 1048576);
-        assert_eq!(Config::parse_i64("1G").unwrap(), 1024*1024*1024);
-        assert_eq!(Config::parse_i64("100G").unwrap(), 100*1024*1024*1024);
     }
 }

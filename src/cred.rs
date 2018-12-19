@@ -572,6 +572,4 @@ echo username=c
         perms.set_mode(0o755);
         fs::set_permissions(path, perms).unwrap();
     }
-    #[cfg(windows)]
-    fn chmod(_path: &Path) {}
 }

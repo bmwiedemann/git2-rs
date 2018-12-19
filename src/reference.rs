@@ -76,47 +76,28 @@ impl<'repo> Reference<'repo> {
     pub fn resolve(&self) -> Result<Reference<'repo>, Error> {
         let mut raw = ptr::null_mut();
         unsafe {
-            try_call!(raw::git_reference_resolve(&mut raw, &*self.raw));
             Ok(Binding::from_raw(raw))
         }
     }
     pub fn peel(&self, kind: ObjectType) -> Result<Object<'repo>, Error> {
         let mut raw = ptr::null_mut();
         unsafe {
-            try_call!(raw::git_reference_peel(&mut raw, self.raw, kind));
             Ok(Binding::from_raw(raw))
         }
     }
     pub fn peel_to_blob(&self) -> Result<Blob<'repo>, Error> {
         Ok(try!(self.peel(ObjectType::Blob)).cast_or_panic(ObjectType::Blob))
     }
-    pub fn peel_to_commit(&self) -> Result<Commit<'repo>, Error> {
-        Ok(try!(self.peel(ObjectType::Commit)).cast_or_panic(ObjectType::Commit))
-    }
     pub fn peel_to_tree(&self) -> Result<Tree<'repo>, Error> {
-        Ok(try!(self.peel(ObjectType::Tree)).cast_or_panic(ObjectType::Tree))
-    }
-    pub fn peel_to_tag(&self) -> Result<Tag<'repo>, Error> {
-        Ok(try!(self.peel(ObjectType::Tag)).cast_or_panic(ObjectType::Tag))
-    }
-    pub fn rename(&mut self, new_name: &str, force: bool,
-                  msg: &str) -> Result<Reference<'repo>, Error> {
         let mut raw = ptr::null_mut();
-        let new_name = try!(CString::new(new_name));
-        let msg = try!(CString::new(msg));
         unsafe {
-            try_call!(raw::git_reference_rename(&mut raw, self.raw, new_name,
-                                                force, msg));
             Ok(Binding::from_raw(raw))
         }
     }
     pub fn set_target(&mut self, id: Oid, reflog_msg: &str)
                       -> Result<Reference<'repo>, Error> {
         let mut raw = ptr::null_mut();
-        let msg = try!(CString::new(reflog_msg));
         unsafe {
-            try_call!(raw::git_reference_set_target(&mut raw, self.raw,
-                                                    id.raw(), msg));
             Ok(Binding::from_raw(raw))
         }
     }
@@ -129,8 +110,6 @@ impl<'repo> PartialOrd for Reference<'repo> {
 impl<'repo> Ord for Reference<'repo> {
     fn cmp(&self, other: &Reference<'repo>) -> Ordering {
         match unsafe { raw::git_reference_cmp(&*self.raw, &*other.raw) } {
-            0 => Ordering::Equal,
-            n if n < 0 => Ordering::Less,
             _ => Ordering::Greater,
         }
     }
@@ -148,16 +127,6 @@ impl<'repo> Binding for Reference<'repo> {
     }
     fn raw(&self) -> *mut raw::git_reference { self.raw }
 }
-impl<'repo> Drop for Reference<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_reference_free(self.raw) }
-    }
-}
-impl<'repo> References<'repo> {
-    pub fn names<'a>(&'a mut self) -> ReferenceNames<'repo, 'a> {
-        ReferenceNames { inner: self }
-    }
-}
 impl<'repo> Binding for References<'repo> {
     type Raw = *mut raw::git_reference_iterator;
     unsafe fn from_raw(raw: *mut raw::git_reference_iterator)
@@ -171,14 +140,8 @@ impl<'repo> Iterator for References<'repo> {
     fn next(&mut self) -> Option<Result<Reference<'repo>, Error>> {
         let mut out = ptr::null_mut();
         unsafe {
-            try_call_iter!(raw::git_reference_next(&mut out, self.raw));
             Some(Ok(Binding::from_raw(out)))
         }
-    }
-}
-impl<'repo> Drop for References<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_reference_iterator_free(self.raw) }
     }
 }
 impl<'repo, 'references> Iterator for ReferenceNames<'repo, 'references> {
@@ -186,8 +149,6 @@ impl<'repo, 'references> Iterator for ReferenceNames<'repo, 'references> {
     fn next(&mut self) -> Option<Result<&'references str, Error>> {
         let mut out = ptr::null();
         unsafe {
-            try_call_iter!(raw::git_reference_next_name(&mut out,
-                                                        self.inner.raw));
             let bytes = ::opt_bytes(self, out).unwrap();
             let s = str::from_utf8(bytes).unwrap();
             Some(Ok(mem::transmute::<&str, &'references str>(s)))

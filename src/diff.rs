@@ -225,9 +225,6 @@ impl DiffOptions {
         }, 0);
         opts
     }
-    pub unsafe fn raw(&mut self) -> *const raw::git_diff_options {
-        &self.raw as *const _
-    }
 }
 impl<'diff> Iterator for Deltas<'diff> {
     type Item = DiffDelta<'diff>;

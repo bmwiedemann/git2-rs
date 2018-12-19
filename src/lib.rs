@@ -46,9 +46,7 @@ macro_rules! is_bit_set {
     ($name:ident, $flag:expr) => (
     )
 }
-#[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum ErrorCode {
-    GenericError,
 }
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum ErrorClass {

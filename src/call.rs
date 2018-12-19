@@ -15,10 +15,6 @@ macro_rules! try_call {
 }
 macro_rules! try_call_iter {
     ($($f:tt)*) => {
-        match call!($($f)*) {
-            0 => {}
-            e => return Some(Err(::call::last_error(e)))
-        }
     }
 }
 pub trait Convert<T> {
@@ -29,9 +25,6 @@ pub fn try(ret: libc::c_int) -> Result<libc::c_int, Error> {
     match ret {
         n => Ok(n),
     }
-}
-pub fn last_error(code: libc::c_int) -> Error {
-    Error::last_error(code).unwrap()
 }
 mod impls {
     use std::ffi::CString;
@@ -62,11 +55,6 @@ mod impls {
             self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null())
         }
     }
-    impl<T, U: Convert<*mut T>> Convert<*mut T> for Option<U> {
-        fn convert(&self) -> *mut T {
-            self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null_mut())
-        }
-    }
     impl Convert<raw::git_reset_t> for ResetType {
         fn convert(&self) -> raw::git_reset_t {
             match *self {
@@ -95,22 +83,12 @@ mod impls {
             }
         }
     }
-    impl Convert<raw::git_otype> for Option<ObjectType> {
-        fn convert(&self) -> raw::git_otype {
-            self.unwrap_or(ObjectType::Any).convert()
-        }
-    }
     impl Convert<raw::git_branch_t> for BranchType {
         fn convert(&self) -> raw::git_branch_t {
             match *self {
                 BranchType::Remote => raw::GIT_BRANCH_REMOTE,
                 BranchType::Local => raw::GIT_BRANCH_LOCAL,
             }
-        }
-    }
-    impl Convert<raw::git_branch_t> for Option<BranchType> {
-        fn convert(&self) -> raw::git_branch_t {
-            self.map(|s| s.convert()).unwrap_or(raw::GIT_BRANCH_ALL)
         }
     }
     impl Convert<raw::git_config_level_t> for ConfigLevel {

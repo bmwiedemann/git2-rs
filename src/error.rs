@@ -35,11 +35,6 @@ impl Error {
             message: s.to_string(),
         }
     }
-    pub fn code(&self) -> ErrorCode {
-        match self.raw_code() {
-            _ => super::ErrorCode::GenericError,
-        }
-    }
     pub fn class(&self) -> ErrorClass {
         match self.raw_class() {
             _ => super::ErrorClass::None,
@@ -68,15 +63,10 @@ impl Error {
         )
     }
 }
-impl error::Error for Error {
-}
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.class() {
             other => write!(f, "; class={:?} ({})", other, self.klass)?,
-        }
-        match self.code() {
-            other => write!(f, "; code={:?} ({})", other, self.code)?,
         }
         Ok(())
     }
@@ -90,9 +80,5 @@ impl From<NulError> for Error {
 impl From<JoinPathsError> for Error {
     fn from(e: JoinPathsError) -> Error {
         Error::from_str(error::Error::description(&e))
-    }
-}
-mod tests {
-    fn smoke() {
     }
 }

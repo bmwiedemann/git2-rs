@@ -6,7 +6,6 @@ extern crate libgit2_sys as raw;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::str;
-use std::sync::{Once, ONCE_INIT};
 pub use blame::{Blame, BlameHunk, BlameIter, BlameOptions};
 pub use blob::{Blob, BlobWriter};
 pub use branch::{Branch, Branches};
@@ -50,74 +49,12 @@ macro_rules! is_bit_set {
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum ErrorCode {
     GenericError,
-    NotFound,
-    Exists,
-    Ambiguous,
-    BufSize,
-    User,
-    BareRepo,
-    UnbornBranch,
-    Unmerged,
-    NotFastForward,
-    InvalidSpec,
-    Conflict,
-    Locked,
-    Modified,
-    Auth,
-    Certificate,
-    Applied,
-    Peel,
-    Eof,
-    Invalid,
-    Uncommitted,
-    Directory,
 }
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum ErrorClass {
     None,
-    NoMemory,
-    Os,
-    Invalid,
-    Reference,
-    Zlib,
-    Repository,
-    Config,
-    Regex,
-    Odb,
-    Index,
-    Object,
-    Net,
-    Tag,
-    Tree,
-    Indexer,
-    Ssl,
-    Submodule,
-    Thread,
-    Stash,
-    Checkout,
-    FetchHead,
-    Merge,
-    Ssh,
-    Filter,
-    Revert,
-    Callback,
-    CherryPick,
-    Describe,
-    Rebase,
-    Filesystem,
 }
 pub enum RepositoryState {
-    Clean,
-    Merge,
-    Revert,
-    RevertSequence,
-    CherryPick,
-    CherryPickSequence,
-    Bisect,
-    Rebase,
-    RebaseInteractive,
-    RebaseMerge,
-    ApplyMailbox,
     ApplyMailboxOrRebase,
 }
 pub enum Direction {
@@ -163,9 +100,6 @@ bitflags! {
     pub struct Sort: u32 {
         const NONE = raw::GIT_SORT_NONE as u32;
     }
-}
-impl Sort {
-    is_bit_set!(is_none, Sort::NONE);
 }
 bitflags! {
     pub struct CredentialType: u32 {
@@ -302,17 +236,6 @@ bitflags! {
     }
 }
 pub enum Delta {
-    Unmodified,
-    Added,
-    Deleted,
-    Modified,
-    Renamed,
-    Copied,
-    Ignored,
-    Untracked,
-    Typechange,
-    Unreadable,
-    Conflicted,
 }
 bitflags! {
     pub struct SubmoduleStatus: u32 {

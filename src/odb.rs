@@ -2,7 +2,6 @@ use std::marker;
 use std::io;
 use std::ptr;
 use std::slice;
-use std::ffi::CString;
 use libc::{c_char, c_int, c_void, size_t};
 use {raw, Oid, Object, ObjectType, Error};
 use panic;
@@ -21,16 +20,10 @@ impl<'repo> Binding for Odb<'repo> {
     }
     fn raw(&self) -> *mut raw::git_odb { self.raw }
 }
-impl<'repo> Drop for Odb<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_odb_free(self.raw) }
-    }
-}
 impl<'repo> Odb<'repo> {
     pub fn new<'a>() -> Result<Odb<'a>, Error> {
         unsafe {
             let mut out = ptr::null_mut();
-            try_call!(raw::git_odb_new(&mut out));
             Ok(Odb::from_raw(out))
         }
     }
@@ -39,32 +32,24 @@ impl<'repo> Odb<'repo> {
         let mut size = 0usize;
         let mut otype: raw::git_otype = ObjectType::Any.raw();
         unsafe {
-            try_call!(raw::git_odb_open_rstream(&mut out, &mut size, &mut otype, self.raw, oid.raw()));
             Ok((OdbReader::from_raw(out), size, ObjectType::from_raw(otype).unwrap()))
         }
     }
     pub fn writer(&self, size: usize, obj_type: ObjectType) -> Result<OdbWriter, Error> {
         let mut out = ptr::null_mut();
         unsafe {
-            try_call!(raw::git_odb_open_wstream(&mut out, self.raw, size as raw::git_off_t, obj_type.raw()));
             Ok(OdbWriter::from_raw(out))
         }
     }
     pub fn foreach<C>(&self, mut callback: C) -> Result<(), Error>
-        where C: FnMut(&Oid) -> bool
     {
         unsafe {
-            let mut data = ForeachCbData { callback: &mut callback };
-            try_call!(raw::git_odb_foreach(self.raw(),
-                                           foreach_cb,
-                                           &mut data as *mut _ as *mut _));
             Ok(())
         }
     }
     pub fn read(&self, oid: Oid) -> Result<OdbObject, Error> {
         let mut out = ptr::null_mut();
         unsafe {
-            try_call!(raw::git_odb_read(&mut out, self.raw, oid.raw()));
             Ok(OdbObject::from_raw(out))
         }
     }
@@ -90,35 +75,9 @@ impl<'repo> Odb<'repo> {
                                             as *const c_void,
                                          data.len(),
                                          kind.raw()));
-            Ok(Oid::from_raw(&mut out))
-        }
-    }
-    pub fn exists(&self, oid: Oid) -> bool {
-        unsafe { raw::git_odb_exists(self.raw, oid.raw()) != -1 }
-    }
-    pub fn exists_prefix(&self, short_oid: Oid, len: usize) -> Result<Oid, Error> {
-        unsafe {
-            let mut out = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-            try_call!(raw::git_odb_exists_prefix(&mut out,
-                                                 self.raw,
-                                                 short_oid.raw(),
-                                                 len));
             Ok(Oid::from_raw(&out))
         }
     } 
-    pub fn refresh(&self) -> Result<(), Error> {
-        unsafe {
-            try_call!(raw::git_odb_refresh(self.raw));
-            Ok(())
-        }
-    }
-    pub fn add_disk_alternate(&self, path: &str) -> Result<(), Error> {
-        unsafe {
-            let path = try!(CString::new(path));
-            try_call!(raw::git_odb_add_disk_alternate(self.raw, path));
-            Ok(())
-        }
-    }
 }
 pub struct OdbObject<'a> {
     raw: *mut raw::git_odb_object,
@@ -134,15 +93,7 @@ impl<'a> Binding for OdbObject<'a> {
     }
     fn raw(&self) -> *mut raw::git_odb_object { self.raw }
 }
-impl<'a> Drop for OdbObject<'a> {
-    fn drop(&mut self) {
-        unsafe { raw::git_odb_object_free(self.raw) }
-    }
-}
 impl<'a> OdbObject<'a> {
-    pub fn kind(&self) -> ObjectType {
-        unsafe { ObjectType::from_raw(raw::git_odb_object_type(self.raw)).unwrap() }
-    }
     pub fn len(&self) -> usize {
         unsafe { raw::git_odb_object_size(self.raw) }
     }
@@ -153,9 +104,6 @@ impl<'a> OdbObject<'a> {
             let buffer = slice::from_raw_parts(ptr, size);
             return buffer;
         }
-    }
-    pub fn id(&self) -> Oid {
-        unsafe { Oid::from_raw(raw::git_odb_object_id(self.raw)) }
     }
 }
 pub struct OdbReader<'repo> {
@@ -171,11 +119,6 @@ impl<'repo> Binding for OdbReader<'repo> {
         }
     }
     fn raw(&self) -> *mut raw::git_odb_stream { self.raw }
-}
-impl<'repo> Drop for OdbReader<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_odb_stream_free(self.raw) }
-    }
 }
 impl<'repo> io::Read for OdbReader<'repo> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
@@ -199,27 +142,15 @@ impl<'repo> OdbWriter<'repo> {
     pub fn finalize(&mut self) -> Result<Oid, Error> {
         let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
         unsafe {
-            try_call!(raw::git_odb_stream_finalize_write(&mut raw, self.raw));
             Ok(Binding::from_raw(&raw as *const _))
         }
     }
-}
-impl<'repo> Binding for OdbWriter<'repo> {
-    type Raw = *mut raw::git_odb_stream;
     unsafe fn from_raw(raw: *mut raw::git_odb_stream) -> OdbWriter<'repo> {
         OdbWriter {
             raw: raw,
             _marker: marker::PhantomData,
         }
     }
-    fn raw(&self) -> *mut raw::git_odb_stream { self.raw }
-}
-impl<'repo> Drop for OdbWriter<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_odb_stream_free(self.raw) }
-    }
-}
-impl<'repo> io::Write for OdbWriter<'repo> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         unsafe {
             let ptr = buf.as_ptr() as *const c_char;
@@ -232,7 +163,6 @@ impl<'repo> io::Write for OdbWriter<'repo> {
             }
         }
     }
-    fn flush(&mut self) -> io::Result<()> { Ok(()) }
 }
 pub type ForeachCb<'a> = FnMut(&Oid) -> bool + 'a;
 struct ForeachCbData<'a> {

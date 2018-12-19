@@ -8,12 +8,6 @@ pub struct TreeBuilder<'repo> {
     _marker: marker::PhantomData<&'repo Repository>,
 }
 impl<'repo> TreeBuilder<'repo> {
-    pub fn len(&self) -> usize {
-        unsafe { raw::git_treebuilder_entrycount(self.raw) as usize }
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
     pub fn get<P>(&self, filename: P) -> Result<Option<TreeEntry>, Error>
         where P: IntoCString
     {
@@ -32,18 +26,6 @@ impl<'repo> TreeBuilder<'repo> {
         let mut ret = ptr::null();
         unsafe {
             Ok(tree::entry_from_raw_const(ret))
-        }
-    }
-    pub fn remove<P: IntoCString>(&mut self, filename: P) -> Result<(), Error> {
-        Ok(())
-    }
-    pub fn filter<F>(&mut self, mut filter: F)
-        where F: FnMut(&TreeEntry) -> bool
-    {
-        let mut cb: &mut FilterCb = &mut filter;
-        let ptr = &mut cb as *mut _;
-        unsafe {
-            raw::git_treebuilder_filter(self.raw, filter_cb, ptr as *mut _);
         }
     }
     pub fn write(&self) -> Result<Oid, Error> {
@@ -73,8 +55,4 @@ impl<'repo> Binding for TreeBuilder<'repo> {
         TreeBuilder { raw: raw, _marker: marker::PhantomData }
     }
     fn raw(&self) -> *mut raw::git_treebuilder { self.raw }
-}
-impl<'repo> Drop for TreeBuilder<'repo> {
-    fn drop(&mut self) {
-    }
 }

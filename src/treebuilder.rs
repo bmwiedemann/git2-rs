@@ -28,12 +28,6 @@ impl<'repo> TreeBuilder<'repo> {
             Ok(tree::entry_from_raw_const(ret))
         }
     }
-    pub fn write(&self) -> Result<Oid, Error> {
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        unsafe {
-            Ok(Binding::from_raw(&raw as *const _))
-        }
-    }
 }
 type FilterCb<'a> = FnMut(&TreeEntry) -> bool + 'a;
 extern fn filter_cb(entry: *const raw::git_tree_entry,

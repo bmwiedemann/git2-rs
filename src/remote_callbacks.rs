@@ -50,8 +50,6 @@ impl<'a> Binding for RemoteCallbacks<'a> {
     fn raw(&self) -> raw::git_remote_callbacks {
         unsafe {
             let mut callbacks: raw::git_remote_callbacks = mem::zeroed();
-            assert_eq!(raw::git_remote_init_callbacks(&mut callbacks,
-                                        raw::GIT_REMOTE_CALLBACKS_VERSION), 0);
             callbacks
         }
     }

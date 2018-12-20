@@ -3,7 +3,6 @@ use std::cmp::Ordering;
 use std::ffi::{CStr, CString};
 use std::ops::Range;
 use std::marker;
-use std::path::Path;
 use std::ptr;
 use libc::{self, c_int, c_char, c_void};
 use {panic, raw, Oid, Repository, Error, Object, ObjectType};
@@ -22,14 +21,8 @@ pub struct TreeIter<'tree> {
     tree: &'tree Tree<'tree>,
 }
 pub enum TreeWalkMode {
-    PreOrder = 0,
 }
 pub enum TreeWalkResult {
-}
-impl Into<raw::git_treewalk_mode> for TreeWalkMode {
-    fn into(self) -> raw::git_treewalk_mode {
-        self as u32
-    }
 }
 impl<'repo> Tree<'repo> {
     pub fn len(&self) -> usize {
@@ -39,21 +32,8 @@ impl<'repo> Tree<'repo> {
         TreeIter { range: 0..self.len(), tree: self }
     }
     pub fn walk<C, T>(&self, mode: TreeWalkMode, mut callback: C) -> Result<(), Error>
-    where
-        C: FnMut(&str, &TreeEntry) -> T,
-        T: Into<i32>,
     {
-        struct TreeWalkCbData<'a, T: 'a> {
-            pub callback: &'a mut TreeWalkCb<'a, T>
-        }
         unsafe {
-            let mut data = TreeWalkCbData { callback: &mut callback };
-            raw::git_tree_walk(
-                self.raw(),
-                mode.into(),
-                treewalk_cb::<T>,
-                &mut data as *mut _ as *mut c_void,
-            );
             Ok(())
         }
     }
@@ -89,19 +69,7 @@ impl<'repo> Tree<'repo> {
             }
         }
     }
-    pub fn get_path(&self, path: &Path) -> Result<TreeEntry<'static>, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(ret))
-        }
-    }
-    pub fn as_object(&self) -> &Object<'repo> {
-        unsafe {
-            mem::transmute(self)
-        }
-    }
 }
-type TreeWalkCb<'a, T> = FnMut(&str, &TreeEntry) -> T + 'a;
 extern fn treewalk_cb<T: Into<i32>>(root: *const c_char, entry: *const raw::git_tree_entry, payload: *mut c_void) -> c_int {
     match panic::wrap(|| unsafe {
         let root = match CStr::from_ptr(root).to_str() {
@@ -118,16 +86,6 @@ impl<'repo> Binding for Tree<'repo> {
         Tree { raw: raw, _marker: marker::PhantomData }
     }
     fn raw(&self) -> *mut raw::git_tree { self.raw }
-}
-impl<'repo> Clone for Tree<'repo> {
-    fn clone(&self) -> Self {
-        self.as_object().clone().into_tree().ok().unwrap()
-    }
-}
-impl<'repo> Drop for Tree<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_tree_free(self.raw) }
-    }
 }
 impl<'repo, 'iter> IntoIterator for &'iter Tree<'repo> {
     type Item = TreeEntry<'iter>;
@@ -150,12 +108,6 @@ impl<'tree> TreeEntry<'tree> {
         let mut ret = ptr::null_mut();
         unsafe {
             Ok(Binding::from_raw(ret))
-        }
-    }
-    pub fn to_owned(&self) -> TreeEntry<'static> {
-        unsafe {
-            let me = mem::transmute::<&TreeEntry<'tree>, &TreeEntry<'static>>(self);
-            me.clone()
         }
     }
 }
@@ -200,10 +152,5 @@ impl<'tree> Iterator for TreeIter<'tree> {
     type Item = TreeEntry<'tree>;
     fn next(&mut self) -> Option<TreeEntry<'tree>> {
         self.range.next().and_then(|i| self.tree.get(i))
-    }
-}
-impl<'tree> DoubleEndedIterator for TreeIter<'tree> {
-    fn next_back(&mut self) -> Option<TreeEntry<'tree>> {
-        self.range.next_back().and_then(|i| self.tree.get(i))
     }
 }

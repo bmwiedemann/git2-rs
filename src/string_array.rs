@@ -8,10 +8,6 @@ pub struct Iter<'a> {
     range: Range<usize>,
     arr: &'a StringArray,
 }
-pub struct IterBytes<'a> {
-    range: Range<usize>,
-    arr: &'a StringArray,
-}
 impl StringArray {
     pub fn get(&self, i: usize) -> Option<&str> {
         self.get_bytes(i).and_then(|s| str::from_utf8(s).ok())
@@ -28,9 +24,6 @@ impl StringArray {
     }
     pub fn iter(&self) -> Iter {
         Iter { range: 0..self.len(), arr: self }
-    }
-    pub fn iter_bytes(&self) -> IterBytes {
-        IterBytes { range: 0..self.len(), arr: self }
     }
     pub fn len(&self) -> usize { self.raw.count as usize }
 }
@@ -52,25 +45,5 @@ impl<'a> Iterator for Iter<'a> {
     type Item = Option<&'a str>;
     fn next(&mut self) -> Option<Option<&'a str>> {
         self.range.next().map(|i| self.arr.get(i))
-    }
-}
-impl<'a> DoubleEndedIterator for Iter<'a> {
-    fn next_back(&mut self) -> Option<Option<&'a str>> {
-        self.range.next_back().map(|i| self.arr.get(i))
-    }
-}
-impl<'a> Iterator for IterBytes<'a> {
-    type Item = &'a [u8];
-    fn next(&mut self) -> Option<&'a [u8]> {
-        self.range.next().and_then(|i| self.arr.get_bytes(i))
-    }
-}
-impl<'a> DoubleEndedIterator for IterBytes<'a> {
-    fn next_back(&mut self) -> Option<&'a [u8]> {
-        self.range.next_back().and_then(|i| self.arr.get_bytes(i))
-    }
-}
-impl Drop for StringArray {
-    fn drop(&mut self) {
     }
 }

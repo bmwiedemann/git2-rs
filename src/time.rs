@@ -19,8 +19,6 @@ impl Time {
             })
         }
     }
-    pub fn seconds(&self) -> i64 { self.raw.time as i64 }
-    pub fn offset_minutes(&self) -> i32 { self.raw.offset as i32 }
 }
 impl PartialOrd for Time {
     fn partial_cmp(&self, other: &Time) -> Option<Ordering> {

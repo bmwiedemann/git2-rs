@@ -1,9 +1,5 @@
-use std::env::JoinPathsError;
 use std::ffi::{CStr, NulError};
-use std::error;
-use std::fmt;
 use libc::c_int;
-use {raw, ErrorClass, ErrorCode};
 #[derive(Debug,PartialEq)]
 pub struct Error {
     code: c_int,
@@ -35,11 +31,6 @@ impl Error {
             message: s.to_string(),
         }
     }
-    pub fn class(&self) -> ErrorClass {
-        match self.raw_class() {
-            _ => super::ErrorClass::None,
-        }
-    }
     pub fn raw_code(&self) -> raw::git_error_code {
         macro_rules! check( ($($e:ident,)*) => (
             $(if self.code == raw::$e as c_int { raw::$e }) else *
@@ -63,22 +54,9 @@ impl Error {
         )
     }
 }
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.class() {
-            other => write!(f, "; class={:?} ({})", other, self.klass)?,
-        }
-        Ok(())
-    }
-}
 impl From<NulError> for Error {
     fn from(_: NulError) -> Error {
         Error::from_str("data contained a nul byte that could not be \
                          represented as a string")
-    }
-}
-impl From<JoinPathsError> for Error {
-    fn from(e: JoinPathsError) -> Error {
-        Error::from_str(error::Error::description(&e))
     }
 }

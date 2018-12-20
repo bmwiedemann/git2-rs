@@ -10,7 +10,4 @@ impl<'repo> Revspec<'repo> {
                         mode: RevparseMode) -> Revspec<'repo> {
         Revspec { from: from, to: to, mode: mode }
     }
-    pub fn from(&self) -> Option<&Object<'repo>> { self.from.as_ref() }
-    pub fn to(&self) -> Option<&Object<'repo>> { self.to.as_ref() }
-    pub fn mode(&self) -> RevparseMode { self.mode }
 }

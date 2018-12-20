@@ -34,18 +34,11 @@ pub struct RemoteConnection<'repo, 'connection, 'cb> where 'repo: 'connection {
 }
 impl<'repo> Remote<'repo> {
     pub fn connect_auth<'connection, 'cb>(&'connection mut self,
-                                          dir: Direction,
                                           cb: Option<RemoteCallbacks<'cb>>,
                                           proxy_options: Option<ProxyOptions<'cb>>)
                     -> Result<RemoteConnection<'repo, 'connection, 'cb>, Error> {
         let cb = Box::new(cb.unwrap_or_else(RemoteCallbacks::new));
         let proxy_options = proxy_options.unwrap_or_else(ProxyOptions::new);
-        unsafe {
-            try_call!(raw::git_remote_connect(self.raw, dir,
-                                              &cb.raw(),
-                                              &proxy_options.raw(),
-                                              ptr::null()));
-        }
         Ok(RemoteConnection {
             _callbacks: cb,
             _proxy: proxy_options,

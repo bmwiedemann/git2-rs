@@ -1,9 +1,6 @@
 use std::ffi::CString;
 use std::marker;
 use std::mem;
-use std::ops::Range;
-use std::ptr;
-use std::slice;
 use libc::{c_char, size_t, c_void, c_int};
 use {raw, panic, Buf, Delta, Oid, Repository, Error, DiffFormat};
 use util::{self, Binding};
@@ -27,10 +24,8 @@ pub struct DiffOptions {
     raw: raw::git_diff_options,
 }
 pub struct DiffFindOptions {
-    raw: raw::git_diff_find_options,
 }
 pub struct Deltas<'diff> {
-    range: Range<usize>,
     diff: &'diff Diff<'diff>,
 }
 pub struct DiffLine<'a> {
@@ -47,10 +42,6 @@ pub struct DiffStats {
 pub struct DiffBinary<'a> {
     raw: *const raw::git_diff_binary,
     _marker: marker::PhantomData<&'a raw::git_diff_binary>,
-}
-pub struct DiffBinaryFile<'a> {
-    raw: *const raw::git_diff_binary_file,
-    _marker: marker::PhantomData<&'a raw::git_diff_binary_file>,
 }
 pub enum DiffBinaryKind {
     None,
@@ -69,38 +60,11 @@ struct ForeachCallbacks<'a, 'b: 'a, 'c, 'd: 'c, 'e, 'f: 'e, 'g, 'h: 'g> {
     line: Option<&'g mut LineCb<'h>>,
 }
 impl<'repo> Diff<'repo> {
-    pub fn get_delta(&self, i: usize) -> Option<DiffDelta> {
-        unsafe {
-            let ptr = raw::git_diff_get_delta(&*self.raw, i as size_t);
-            Binding::from_raw_opt(ptr as *mut _)
-        }
-    }
     pub fn print<F>(&self, format: DiffFormat, mut cb: F) -> Result<(), Error>
                     where F: FnMut(DiffDelta,
                                    DiffLine) -> bool {
         unsafe {
             Ok(())
-        }
-    }
-    pub fn foreach(&self,
-                   file_cb: &mut FileCb,
-                   binary_cb: Option<&mut BinaryCb>,
-                   hunk_cb: Option<&mut HunkCb>,
-                   line_cb: Option<&mut LineCb>) -> Result<(), Error> {
-        let mut cbs = ForeachCallbacks {
-            file: file_cb,
-            binary: binary_cb,
-            hunk: hunk_cb,
-            line: line_cb,
-        };
-        unsafe {
-            Ok(())
-        }
-    }
-    pub fn stats(&self) -> Result<DiffStats, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(ret))
         }
     }
 }
@@ -223,20 +187,6 @@ impl DiffOptions {
         opts
     }
 }
-impl<'diff> Iterator for Deltas<'diff> {
-    type Item = DiffDelta<'diff>;
-    fn next(&mut self) -> Option<DiffDelta<'diff>> {
-        self.range.next().and_then(|i| self.diff.get_delta(i))
-    }
-}
-impl<'a> DiffLine<'a> {
-    pub fn content(&self) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts((*self.raw).content as *const u8,
-                                  (*self.raw).content_len as usize)
-        }
-    }
-}
 impl<'a> Binding for DiffLine<'a> {
     type Raw = *const raw::git_diff_line;
     unsafe fn from_raw(raw: *const raw::git_diff_line) -> DiffLine<'a> {
@@ -246,14 +196,6 @@ impl<'a> Binding for DiffLine<'a> {
         }
     }
     fn raw(&self) -> *const raw::git_diff_line { self.raw }
-}
-impl<'a> DiffHunk<'a> {
-    pub fn header(&self) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts((*self.raw).header.as_ptr() as *const u8,
-                                  (*self.raw).header_len as usize)
-        }
-    }
 }
 impl<'a> Binding for DiffHunk<'a> {
     type Raw = *const raw::git_diff_hunk;
@@ -282,20 +224,6 @@ impl<'a> Binding for DiffBinary<'a> {
     }
     fn raw(&self) -> *const raw::git_diff_binary { self.raw }
 }
-impl<'a> DiffBinaryFile<'a> {
-    pub fn data(&self) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts((*self.raw).data as *const u8,
-                                  (*self.raw).datalen as usize)
-        }
-    }
-    unsafe fn from_raw(raw: *const raw::git_diff_binary_file) -> DiffBinaryFile<'a> {
-        DiffBinaryFile {
-            raw: raw,
-            _marker: marker::PhantomData,
-        }
-    }
-}
 impl Binding for DiffBinaryKind {
     type Raw = raw::git_diff_binary_t;
     unsafe fn from_raw(raw: raw::git_diff_binary_t) -> DiffBinaryKind {
@@ -312,12 +240,6 @@ impl Binding for DiffBinaryKind {
     }
 }
 impl DiffFindOptions {
-    pub fn new() -> DiffFindOptions {
-        let mut opts = DiffFindOptions {
-            raw: unsafe { mem::zeroed() },
-        };
-        opts
-    }
     fn flag(&mut self, opt: u32, val: bool) -> &mut DiffFindOptions {
         self
     }

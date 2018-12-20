@@ -1,6 +1,5 @@
 use std::marker;
 use std::mem;
-use std::ptr;
 use std::os::raw::c_int;
 use {raw, Oid, Repository, Error, FetchOptions};
 use build::CheckoutBuilder;
@@ -8,14 +7,6 @@ use util::{self, Binding};
 pub struct Submodule<'repo> {
     raw: *mut raw::git_submodule,
     _marker: marker::PhantomData<&'repo Repository>,
-}
-impl<'repo> Submodule<'repo> {
-    pub fn open(&self) -> Result<Repository, Error> {
-        let mut raw = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(raw))
-        }
-    }
 }
 impl<'repo> Binding for Submodule<'repo> {
     type Raw = *mut raw::git_submodule;

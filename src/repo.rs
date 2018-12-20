@@ -711,12 +711,6 @@ impl Repository {
             Ok(())
         }
     }
-    pub fn stash_foreach<C>(&mut self, mut callback: C) -> Result<(), Error>
-    {
-        unsafe {
-            Ok(())
-        }
-    }
     pub fn stash_pop(&mut self,
                      opts: Option<&mut StashApplyOptions>)
                      -> Result<(), Error> {

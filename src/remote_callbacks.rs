@@ -2,7 +2,6 @@ use std::ffi::{CStr, CString};
 use std::marker;
 use std::mem;
 use std::slice;
-use std::ptr;
 use std::str;
 use libc::{c_void, c_int, c_char, c_uint};
 use {raw, panic, Error, Cred, CredentialType, Oid};
@@ -31,13 +30,6 @@ pub type TransportMessage<'a> = FnMut(&[u8]) -> bool + 'a;
 pub type UpdateTips<'a> = FnMut(&str, Oid, Oid) -> bool + 'a;
 pub type CertificateCheck<'a> = FnMut(&Cert, &str) -> bool + 'a;
 pub type PushUpdateReference<'a> = FnMut(&str, Option<&str>) -> Result<(), Error> + 'a;
-
-impl<'a> Default for RemoteCallbacks<'a> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl<'a> RemoteCallbacks<'a> {
     pub fn new() -> RemoteCallbacks<'a> {
         RemoteCallbacks {
@@ -49,148 +41,21 @@ impl<'a> RemoteCallbacks<'a> {
             push_update_reference: None,
         }
     }
-
-    /// The callback through which to fetch credentials if required.
-    pub fn credentials<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-                          where F: FnMut(&str, Option<&str>, CredentialType)
-                                         -> Result<Cred, Error> + 'a
-    {
-        self.credentials = Some(Box::new(cb) as Box<Credentials<'a>>);
-        self
-    }
-
-    /// The callback through which progress is monitored.
-    pub fn transfer_progress<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-                                where F: FnMut(Progress) -> bool + 'a {
-        self.progress = Some(Box::new(cb) as Box<TransferProgress<'a>>);
-        self
-    }
-
-    /// Textual progress from the remote.
-    ///
-    /// Text sent over the progress side-band will be passed to this function
-    /// (this is the 'counting objects' output).
-    pub fn sideband_progress<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-                                where F: FnMut(&[u8]) -> bool + 'a {
-        self.sideband_progress = Some(Box::new(cb) as Box<TransportMessage<'a>>);
-        self
-    }
-
-    /// Each time a reference is updated locally, the callback will be called
-    /// with information about it.
-    pub fn update_tips<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-                          where F: FnMut(&str, Oid, Oid) -> bool + 'a {
-        self.update_tips = Some(Box::new(cb) as Box<UpdateTips<'a>>);
-        self
-    }
-
-    /// If certificate verification fails, then this callback will be invoked to
-    /// let the caller make the final decision of whether to allow the
-    /// connection to proceed.
-    pub fn certificate_check<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-        where F: FnMut(&Cert, &str) -> bool + 'a
-    {
-        self.certificate_check = Some(Box::new(cb) as Box<CertificateCheck<'a>>);
-        self
-    }
-
-    /// Set a callback to get invoked for each updated reference on a push.
-    ///
-    /// The first argument to the callback is the name of the reference and the
-    /// second is a status message sent by the server. If the status is `Some`
-    /// then the push was rejected.
-    pub fn push_update_reference<F>(&mut self, cb: F) -> &mut RemoteCallbacks<'a>
-        where F: FnMut(&str, Option<&str>) -> Result<(), Error> + 'a,
-    {
-        self.push_update_reference = Some(Box::new(cb) as Box<PushUpdateReference<'a>>);
-        self
-    }
 }
-
 impl<'a> Binding for RemoteCallbacks<'a> {
     type Raw = raw::git_remote_callbacks;
     unsafe fn from_raw(_raw: raw::git_remote_callbacks) -> RemoteCallbacks<'a> {
         panic!("unimplemented");
     }
-
     fn raw(&self) -> raw::git_remote_callbacks {
         unsafe {
             let mut callbacks: raw::git_remote_callbacks = mem::zeroed();
             assert_eq!(raw::git_remote_init_callbacks(&mut callbacks,
                                         raw::GIT_REMOTE_CALLBACKS_VERSION), 0);
-            if self.progress.is_some() {
-                let f: raw::git_transfer_progress_cb = transfer_progress_cb;
-                callbacks.transfer_progress = Some(f);
-            }
-            if self.credentials.is_some() {
-                let f: raw::git_cred_acquire_cb = credentials_cb;
-                callbacks.credentials = Some(f);
-            }
-            if self.sideband_progress.is_some() {
-                let f: raw::git_transport_message_cb = sideband_progress_cb;
-                callbacks.sideband_progress = Some(f);
-            }
-            if self.certificate_check.is_some() {
-                let f: raw::git_transport_certificate_check_cb =
-                        certificate_check_cb;
-                callbacks.certificate_check = Some(f);
-            }
-            if self.push_update_reference.is_some() {
-                let f: extern fn(_, _, _) -> c_int = push_update_reference_cb;
-                callbacks.push_update_reference = Some(f);
-            }
-            if self.update_tips.is_some() {
-                let f: extern fn(*const c_char, *const raw::git_oid,
-                                 *const raw::git_oid, *mut c_void) -> c_int
-                                = update_tips_cb;
-                callbacks.update_tips = Some(f);
-            }
-            callbacks.payload = self as *const _ as *mut _;
             callbacks
         }
     }
 }
-
-impl<'a> Progress<'a> {
-    /// Number of objects in the packfile being downloaded
-    pub fn total_objects(&self) -> usize {
-        unsafe { (*self.raw()).total_objects as usize }
-    }
-    /// Received objects that have been hashed
-    pub fn indexed_objects(&self) -> usize {
-        unsafe { (*self.raw()).indexed_objects as usize }
-    }
-    /// Objects which have been downloaded
-    pub fn received_objects(&self) -> usize {
-        unsafe { (*self.raw()).received_objects as usize }
-    }
-    /// Locally-available objects that have been injected in order to fix a thin
-    /// pack.
-    pub fn local_objects(&self) -> usize {
-        unsafe { (*self.raw()).local_objects as usize }
-    }
-    /// Number of deltas in the packfile being downloaded
-    pub fn total_deltas(&self) -> usize {
-        unsafe { (*self.raw()).total_deltas as usize }
-    }
-    /// Received deltas that have been hashed.
-    pub fn indexed_deltas(&self) -> usize {
-        unsafe { (*self.raw()).indexed_deltas as usize }
-    }
-    /// Size of the packfile received up to now
-    pub fn received_bytes(&self) -> usize {
-        unsafe { (*self.raw()).received_bytes as usize }
-    }
-
-    /// Convert this to an owned version of `Progress`.
-    pub fn to_owned(&self) -> Progress<'static> {
-        Progress {
-            raw: ProgressState::Owned(unsafe { *self.raw() }),
-            _marker: marker::PhantomData,
-        }
-    }
-}
-
 impl<'a> Binding for Progress<'a> {
     type Raw = *const raw::git_transfer_progress;
     unsafe fn from_raw(raw: *const raw::git_transfer_progress)
@@ -217,7 +82,6 @@ extern fn credentials_cb(ret: *mut *mut raw::git_cred,
             let payload = &mut *(payload as *mut RemoteCallbacks);
             let callback = try!(payload.credentials.as_mut()
                                        .ok_or(raw::GIT_PASSTHROUGH as c_int));
-            *ret = ptr::null_mut();
             let url = try!(str::from_utf8(CStr::from_ptr(url).to_bytes())
                               .map_err(|_| raw::GIT_PASSTHROUGH as c_int));
             let username_from_url = match ::opt_bytes(&url, username_from_url) {
@@ -227,21 +91,14 @@ extern fn credentials_cb(ret: *mut *mut raw::git_cred,
                 }
                 None => None,
             };
-
             let cred_type = CredentialType::from_bits_truncate(allowed_types as u32);
-
             callback(url, username_from_url, cred_type).map_err(|e| {
-                let s = CString::new(e.to_string()).unwrap();
-                raw::giterr_set_str(e.raw_code() as c_int, s.as_ptr());
                 e.raw_code() as c_int
             })
         });
         match ok {
             Some(Ok(cred)) => {
-                // Turns out it's a memory safety issue if we pass through any
-                // and all credentials into libgit2
                 if allowed_types & (cred.credtype() as c_uint) != 0 {
-                    *ret = cred.unwrap();
                     0
                 } else {
                     raw::GIT_PASSTHROUGH as c_int
@@ -252,7 +109,6 @@ extern fn credentials_cb(ret: *mut *mut raw::git_cred,
         }
     }
 }
-
 extern fn transfer_progress_cb(stats: *const raw::git_transfer_progress,
                                payload: *mut c_void) -> c_int {
     let ok = panic::wrap(|| unsafe {
@@ -298,9 +154,7 @@ extern fn update_tips_cb(refname: *const c_char,
     });
     if ok == Some(true) {0} else {-1}
 }
-
 extern fn certificate_check_cb(cert: *mut raw::git_cert,
-                               _valid: c_int,
                                hostname: *const c_char,
                                data: *mut c_void) -> c_int {
     let ok = panic::wrap(|| unsafe {

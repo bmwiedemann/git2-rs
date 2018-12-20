@@ -21,12 +21,6 @@ impl<'repo> Binding for Odb<'repo> {
     fn raw(&self) -> *mut raw::git_odb { self.raw }
 }
 impl<'repo> Odb<'repo> {
-    pub fn new<'a>() -> Result<Odb<'a>, Error> {
-        unsafe {
-            let mut out = ptr::null_mut();
-            Ok(Odb::from_raw(out))
-        }
-    }
     pub fn reader(&self, oid: Oid) -> Result<(OdbReader, usize, ObjectType), Error> {
         let mut out = ptr::null_mut();
         let mut size = 0usize;
@@ -35,49 +29,13 @@ impl<'repo> Odb<'repo> {
             Ok((OdbReader::from_raw(out), size, ObjectType::from_raw(otype).unwrap()))
         }
     }
-    pub fn writer(&self, size: usize, obj_type: ObjectType) -> Result<OdbWriter, Error> {
-        let mut out = ptr::null_mut();
-        unsafe {
-            Ok(OdbWriter::from_raw(out))
-        }
-    }
-    pub fn foreach<C>(&self, mut callback: C) -> Result<(), Error>
-    {
-        unsafe {
-            Ok(())
-        }
-    }
-    pub fn read(&self, oid: Oid) -> Result<OdbObject, Error> {
-        let mut out = ptr::null_mut();
-        unsafe {
-            Ok(OdbObject::from_raw(out))
-        }
-    }
     pub fn read_header(&self, oid: Oid) -> Result<(usize, ObjectType), Error> {
         let mut size: usize = 0;
         let mut kind_id: i32 = ObjectType::Any.raw();
         unsafe {
-            try_call!(raw::git_odb_read_header(&mut size
-                                                  as *mut size_t,
-                                               &mut kind_id
-                                                  as *mut raw::git_otype,
-                                               self.raw,
-                                               oid.raw()));
             Ok((size, ObjectType::from_raw(kind_id).unwrap()))
         }
     }
-    pub fn write(&self, kind: ObjectType, data: &[u8]) -> Result<Oid, Error> {
-        unsafe {
-            let mut out = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-            try_call!(raw::git_odb_write(&mut out,
-                                         self.raw,
-                                         data.as_ptr()
-                                            as *const c_void,
-                                         data.len(),
-                                         kind.raw()));
-            Ok(Oid::from_raw(&out))
-        }
-    } 
 }
 pub struct OdbObject<'a> {
     raw: *mut raw::git_odb_object,
@@ -139,18 +97,6 @@ pub struct OdbWriter<'repo> {
     _marker: marker::PhantomData<Object<'repo>>,
 }
 impl<'repo> OdbWriter<'repo> {
-    pub fn finalize(&mut self) -> Result<Oid, Error> {
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        unsafe {
-            Ok(Binding::from_raw(&raw as *const _))
-        }
-    }
-    unsafe fn from_raw(raw: *mut raw::git_odb_stream) -> OdbWriter<'repo> {
-        OdbWriter {
-            raw: raw,
-            _marker: marker::PhantomData,
-        }
-    }
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         unsafe {
             let ptr = buf.as_ptr() as *const c_char;

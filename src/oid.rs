@@ -7,10 +7,6 @@ pub struct Oid {
     raw: raw::git_oid
 }
 impl Oid {
-    pub fn from_str(s: &str) -> Result<Oid, Error> {
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        Ok(Oid { raw: raw })
-    }
     pub fn from_bytes(bytes: &[u8]) -> Result<Oid, Error> {
         let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
         if bytes.len() != raw::GIT_OID_RAWSZ {
@@ -27,22 +23,11 @@ impl Binding for Oid {
     }
     fn raw(&self) -> *const raw::git_oid { &self.raw as *const _ }
 }
-impl fmt::Debug for Oid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(self, f)
-    }
-}
 impl fmt::Display for Oid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut dst = [0u8; raw::GIT_OID_HEXSZ + 1];
         let s = &dst[..dst.iter().position(|&a| a == 0).unwrap()];
         str::from_utf8(s).unwrap().fmt(f)
-    }
-}
-impl str::FromStr for Oid {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Oid, Error> {
-        Oid::from_str(s)
     }
 }
 impl PartialEq for Oid {

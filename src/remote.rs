@@ -1,18 +1,15 @@
-use std::ops::Range;
 use std::marker;
 use std::mem;
 use std::ptr;
 use std::slice;
 use {raw, Direction, Error, Refspec, Oid, FetchPrune, ProxyOptions};
 use {RemoteCallbacks, Progress, Repository, AutotagOption};
-use string_array::StringArray;
 use util::Binding;
 pub struct Remote<'repo> {
     raw: *mut raw::git_remote,
     _marker: marker::PhantomData<&'repo Repository>,
 }
 pub struct Refspecs<'remote> {
-    range: Range<usize>,
     remote: &'remote Remote<'remote>,
 }
 pub struct RemoteHead<'remote> {
@@ -35,10 +32,6 @@ pub struct RemoteConnection<'repo, 'connection, 'cb> where 'repo: 'connection {
     _proxy: ProxyOptions<'cb>,
     remote: &'connection mut Remote<'repo>,
 }
-pub fn remote_into_raw(remote: Remote) -> *mut raw::git_remote {
-    let ret = remote.raw;
-    return ret
-}
 impl<'repo> Remote<'repo> {
     pub fn connect_auth<'connection, 'cb>(&'connection mut self,
                                           dir: Direction,
@@ -59,9 +52,6 @@ impl<'repo> Remote<'repo> {
             remote: self,
         })
     }
-    pub fn connected(&mut self) -> bool {
-        unsafe { raw::git_remote_connected(self.raw) == 1 }
-    }
     pub fn get_refspec(&self, i: usize) -> Option<Refspec<'repo>> {
         unsafe {
             let ptr = raw::git_remote_get_refspec(&*self.raw,
@@ -76,12 +66,6 @@ impl<'repo> Remote<'repo> {
             let slice = slice::from_raw_parts(base as *const _, size as usize);
             Ok(mem::transmute::<&[*const raw::git_remote_head],
                                 &[RemoteHead]>(slice))
-        }
-    }
-    pub fn fetch_refspecs(&self) -> Result<StringArray, Error> {
-        unsafe {
-            let mut raw: raw::git_strarray = mem::zeroed();
-            Ok(StringArray::from_raw(raw))
         }
     }
     fn clone(&self) -> Remote<'repo> {
@@ -101,12 +85,6 @@ impl<'repo> Binding for Remote<'repo> {
         }
     }
     fn raw(&self) -> *mut raw::git_remote { self.raw }
-}
-impl<'repo> Iterator for Refspecs<'repo> {
-    type Item = Refspec<'repo>;
-    fn next(&mut self) -> Option<Refspec<'repo>> {
-        self.range.next().and_then(|i| self.remote.get_refspec(i))
-    }
 }
 impl<'cb> FetchOptions<'cb> {
     pub fn new() -> FetchOptions<'cb> {
@@ -163,10 +141,5 @@ impl<'cb> PushOptions<'cb> {
                 strings: ptr::null_mut(),
             },
         }
-    }
-}
-impl<'repo, 'connection, 'cb> RemoteConnection<'repo, 'connection, 'cb> {
-    pub fn connected(&mut self) -> bool {
-        self.remote.connected()
     }
 }

@@ -15,20 +15,11 @@ impl<'repo> Object<'repo> {
     pub fn kind(&self) -> Option<ObjectType> {
         ObjectType::from_raw(unsafe { raw::git_object_type(&*self.raw) })
     }
-    pub fn into_commit(self) -> Result<Commit<'repo>, Object<'repo>> {
-        self.cast_into(ObjectType::Commit)
-    }
     pub fn into_tag(self) -> Result<Tag<'repo>, Object<'repo>> {
         self.cast_into(ObjectType::Tag)
     }
     pub fn into_tree(self) -> Result<Tree<'repo>, Object<'repo>> {
         self.cast_into(ObjectType::Tree)
-    }
-    pub fn into_blob(self) -> Result<Blob<'repo>, Object<'repo>> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(ret))
-        }
     }
     fn cast<T>(&self, kind: ObjectType) -> Option<&T> {
         if self.kind() == Some(kind) {

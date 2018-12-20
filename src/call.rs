@@ -13,10 +13,6 @@ macro_rules! try_call {
         }
     })
 }
-macro_rules! try_call_iter {
-    ($($f:tt)*) => {
-    }
-}
 pub trait Convert<T> {
     fn convert(&self) -> T;
 }

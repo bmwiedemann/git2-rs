@@ -2,7 +2,6 @@ use std::marker;
 use std::mem;
 use std::os::raw::c_int;
 use {raw, Oid, Repository, Error, FetchOptions};
-use build::CheckoutBuilder;
 use util::{self, Binding};
 pub struct Submodule<'repo> {
     raw: *mut raw::git_submodule,
@@ -16,18 +15,10 @@ impl<'repo> Binding for Submodule<'repo> {
     fn raw(&self) -> *mut raw::git_submodule { self.raw }
 }
 pub struct SubmoduleUpdateOptions<'cb> {
-    checkout_builder: CheckoutBuilder<'cb>,
     fetch_opts: FetchOptions<'cb>,
     allow_fetch: bool,
 }
 impl<'cb> SubmoduleUpdateOptions<'cb> {
-    pub fn new() -> Self {
-        SubmoduleUpdateOptions {
-            checkout_builder: CheckoutBuilder::new(),
-            fetch_opts: FetchOptions::new(),
-            allow_fetch: true,
-        }
-    }
     unsafe fn raw(&mut self) -> raw::git_submodule_update_options {
         let mut checkout_opts: raw::git_checkout_options = mem::zeroed();
         let opts = raw::git_submodule_update_options {

@@ -1,9 +1,6 @@
-use std::mem;
 use std::cmp::Ordering;
 use std::ffi::{CStr, CString};
-use std::ops::Range;
 use std::marker;
-use std::ptr;
 use libc::{self, c_int, c_char, c_void};
 use {panic, raw, Oid, Repository, Error, Object, ObjectType};
 use util::{Binding, IntoCString};
@@ -17,7 +14,6 @@ pub struct TreeEntry<'tree> {
     _marker: marker::PhantomData<&'tree raw::git_tree_entry>,
 }
 pub struct TreeIter<'tree> {
-    range: Range<usize>,
     tree: &'tree Tree<'tree>,
 }
 pub enum TreeWalkMode {
@@ -25,18 +21,6 @@ pub enum TreeWalkMode {
 pub enum TreeWalkResult {
 }
 impl<'repo> Tree<'repo> {
-    pub fn len(&self) -> usize {
-        unsafe { raw::git_tree_entrycount(&*self.raw) as usize }
-    }
-    pub fn iter(&self) -> TreeIter {
-        TreeIter { range: 0..self.len(), tree: self }
-    }
-    pub fn walk<C, T>(&self, mode: TreeWalkMode, mut callback: C) -> Result<(), Error>
-    {
-        unsafe {
-            Ok(())
-        }
-    }
     pub fn get_id(&self, id: Oid) -> Option<TreeEntry> {
         unsafe {
             let ptr = raw::git_tree_entry_byid(&*self.raw(), &*id.raw());
@@ -87,28 +71,12 @@ impl<'repo> Binding for Tree<'repo> {
     }
     fn raw(&self) -> *mut raw::git_tree { self.raw }
 }
-impl<'repo, 'iter> IntoIterator for &'iter Tree<'repo> {
-    type Item = TreeEntry<'iter>;
-    type IntoIter = TreeIter<'iter>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
 pub unsafe fn entry_from_raw_const<'tree>(raw: *const raw::git_tree_entry)
                                           -> TreeEntry<'tree> {
     TreeEntry {
         raw: raw as *mut raw::git_tree_entry,
         owned: false,
         _marker: marker::PhantomData,
-    }
-}
-impl<'tree> TreeEntry<'tree> {
-    pub fn to_object<'a>(&self, repo: &'a Repository)
-                         -> Result<Object<'a>, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(ret))
-        }
     }
 }
 impl<'a> Binding for TreeEntry<'a> {
@@ -121,14 +89,6 @@ impl<'a> Binding for TreeEntry<'a> {
         }
     }
     fn raw(&self) -> *mut raw::git_tree_entry { self.raw }
-}
-impl<'a> Clone for TreeEntry<'a> {
-    fn clone(&self) -> TreeEntry<'a> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Binding::from_raw(ret)
-        }
-    }
 }
 impl<'a> PartialOrd for TreeEntry<'a> {
     fn partial_cmp(&self, other: &TreeEntry<'a>) -> Option<Ordering> {
@@ -148,9 +108,3 @@ impl<'a> PartialEq for TreeEntry<'a> {
     }
 }
 impl<'a> Eq for TreeEntry<'a> {}
-impl<'tree> Iterator for TreeIter<'tree> {
-    type Item = TreeEntry<'tree>;
-    fn next(&mut self) -> Option<TreeEntry<'tree>> {
-        self.range.next().and_then(|i| self.tree.get(i))
-    }
-}

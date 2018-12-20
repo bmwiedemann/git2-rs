@@ -1,4 +1,3 @@
-use std::ffi::CString;
 use std::process::{Command, Stdio};
 use std::ptr;
 use {raw, Error, Config, IntoCString};
@@ -14,23 +13,8 @@ pub struct CredentialHelper {
     commands: Vec<String>,
 }
 impl Cred {
-    pub fn ssh_key(username: &str,
-                   passphrase: Option<&str>) -> Result<Cred, Error> {
-        let mut out = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(out))
-        }
-    }
-    pub fn ssh_key_from_memory(username: &str,
-                               passphrase: Option<&str>) -> Result<Cred, Error> {
-        let mut out = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(out))
-        }
-    }
     pub fn userpass_plaintext(username: &str,
                               password: &str) -> Result<Cred, Error> {
-        let username = try!(CString::new(username));
         let mut out = ptr::null_mut();
         unsafe {
             Ok(Binding::from_raw(out))

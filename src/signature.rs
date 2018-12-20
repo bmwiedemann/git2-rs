@@ -1,7 +1,5 @@
 use std::marker;
-use std::ptr;
 use std::fmt;
-use {raw, Error, Time};
 use util::Binding;
 pub struct Signature<'a> {
     raw: *mut raw::git_signature,
@@ -9,13 +7,6 @@ pub struct Signature<'a> {
     owned: bool,
 }
 impl<'a> Signature<'a> {
-    pub fn new(name: &str, email: &str, time: &Time)
-               -> Result<Signature<'static>, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(ret))
-        }
-    }
     pub fn name_bytes(&self) -> &[u8] {
         unsafe { ::opt_bytes(self, (*self.raw).name).unwrap() }
     }

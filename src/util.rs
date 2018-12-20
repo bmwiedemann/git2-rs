@@ -55,22 +55,8 @@ impl<'a> IntoCString for &'a str {
 }
 impl<'a> IntoCString for &'a Path {
     fn into_c_string(self) -> Result<CString, Error> {
-        let s: &OsStr = self.as_ref();
-        s.into_c_string()
-    }
-}
-impl<'a> IntoCString for &'a OsStr {
-    fn into_c_string(self) -> Result<CString, Error> {
         use std::os::unix::prelude::*;
         let s: &OsStr = self.as_ref();
         Ok(try!(CString::new(s.as_bytes())))
-    }
-}
-pub fn into_opt_c_string<S>(opt_s: Option<S>) -> Result<Option<CString>, Error>
-    where S: IntoCString
-{
-    match opt_s {
-        None => Ok(None),
-        Some(s) => Ok(Some(try!(s.into_c_string()))),
     }
 }

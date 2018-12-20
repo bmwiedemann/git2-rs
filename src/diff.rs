@@ -36,9 +36,6 @@ pub struct DiffHunk<'a> {
     raw: *const raw::git_diff_hunk,
     _marker: marker::PhantomData<&'a raw::git_diff_hunk>,
 }
-pub struct DiffStats {
-    raw: *mut raw::git_diff_stats,
-}
 pub struct DiffBinary<'a> {
     raw: *const raw::git_diff_binary,
     _marker: marker::PhantomData<&'a raw::git_diff_binary>,
@@ -58,15 +55,6 @@ struct ForeachCallbacks<'a, 'b: 'a, 'c, 'd: 'c, 'e, 'f: 'e, 'g, 'h: 'g> {
     binary: Option<&'c mut BinaryCb<'d>>,
     hunk: Option<&'e mut HunkCb<'f>>,
     line: Option<&'g mut LineCb<'h>>,
-}
-impl<'repo> Diff<'repo> {
-    pub fn print<F>(&self, format: DiffFormat, mut cb: F) -> Result<(), Error>
-                    where F: FnMut(DiffDelta,
-                                   DiffLine) -> bool {
-        unsafe {
-            Ok(())
-        }
-    }
 }
 pub extern fn print_cb(delta: *const raw::git_diff_delta,
                    hunk: *const raw::git_diff_hunk,
@@ -206,13 +194,6 @@ impl<'a> Binding for DiffHunk<'a> {
         }
     }
     fn raw(&self) -> *const raw::git_diff_hunk { self.raw }
-}
-impl Binding for DiffStats {
-    type Raw = *mut raw::git_diff_stats;
-    unsafe fn from_raw(raw: *mut raw::git_diff_stats) -> DiffStats {
-        DiffStats { raw: raw }
-    }
-    fn raw(&self) -> *mut raw::git_diff_stats { self.raw }
 }
 impl<'a> Binding for DiffBinary<'a> {
     type Raw = *const raw::git_diff_binary;

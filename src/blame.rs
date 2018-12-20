@@ -1,8 +1,6 @@
 use std::marker;
 use {raw, Repository, Oid, signature, Signature};
 use util::{self, Binding};
-use std::path::Path;
-use std::ops::Range;
 pub struct Blame<'repo> {
     raw: *mut raw::git_blame,
     _marker: marker::PhantomData<&'repo Repository>,
@@ -15,7 +13,6 @@ pub struct BlameOptions {
     raw: raw::git_blame_options,
 }
 pub struct BlameIter<'blame> {
-    range: Range<usize>,
     blame: &'blame Blame<'blame>,
 }
 impl<'repo> Blame<'repo> {
@@ -48,15 +45,6 @@ impl<'blame> BlameHunk<'blame> {
             _marker: marker::PhantomData,
         }
     }
-    pub fn path(&self) -> Option<&Path> {
-        unsafe {
-            if let Some(bytes) = ::opt_bytes(self, (*self.raw).orig_path) {
-                Some(util::bytes2path(bytes))
-            } else {
-                None
-            }
-        }
-    }
 }
 impl<'repo> Binding for Blame<'repo> {
     type Raw = *mut raw::git_blame;
@@ -65,13 +53,6 @@ impl<'repo> Binding for Blame<'repo> {
     }
     fn raw(&self) -> *mut raw::git_blame { self.raw }
 }
-impl<'blame> Binding for BlameHunk<'blame> {
-    type Raw = *mut raw::git_blame_hunk;
-    unsafe fn from_raw(raw: *mut raw::git_blame_hunk) -> BlameHunk<'blame> {
-        BlameHunk { raw: raw, _marker: marker::PhantomData }
-    }
-    fn raw(&self) -> *mut raw::git_blame_hunk { self.raw }
-}
 impl Binding for BlameOptions {
     type Raw = *mut raw::git_blame_options;
     unsafe fn from_raw(opts: *mut raw::git_blame_options) -> BlameOptions {
@@ -79,11 +60,5 @@ impl Binding for BlameOptions {
     }
     fn raw(&self) -> *mut raw::git_blame_options {
         &self.raw as *const _ as *mut _
-    }
-}
-impl<'blame> Iterator for BlameIter<'blame> {
-    type Item = BlameHunk<'blame>;
-    fn next(&mut self) -> Option<BlameHunk<'blame>> {
-        self.range.next().and_then(|i| self.blame.get_index(i))
     }
 }

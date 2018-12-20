@@ -48,23 +48,6 @@ mod impls {
             self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null())
         }
     }
-    impl Convert<raw::git_reset_t> for ResetType {
-        fn convert(&self) -> raw::git_reset_t {
-            match *self {
-                ResetType::Soft => raw::GIT_RESET_SOFT,
-                ResetType::Hard => raw::GIT_RESET_HARD,
-                ResetType::Mixed => raw::GIT_RESET_MIXED,
-            }
-        }
-    }
-    impl Convert<raw::git_direction> for Direction {
-        fn convert(&self) -> raw::git_direction {
-            match *self {
-                Direction::Push => raw::GIT_DIRECTION_PUSH,
-                Direction::Fetch => raw::GIT_DIRECTION_FETCH,
-            }
-        }
-    }
     impl Convert<raw::git_otype> for ObjectType {
         fn convert(&self) -> raw::git_otype {
             match *self {
@@ -73,14 +56,6 @@ mod impls {
                 ObjectType::Tree => raw::GIT_OBJ_TREE,
                 ObjectType::Blob => raw::GIT_OBJ_BLOB,
                 ObjectType::Tag => raw::GIT_OBJ_TAG,
-            }
-        }
-    }
-    impl Convert<raw::git_branch_t> for BranchType {
-        fn convert(&self) -> raw::git_branch_t {
-            match *self {
-                BranchType::Remote => raw::GIT_BRANCH_REMOTE,
-                BranchType::Local => raw::GIT_BRANCH_LOCAL,
             }
         }
     }

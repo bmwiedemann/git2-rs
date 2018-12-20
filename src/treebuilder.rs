@@ -1,5 +1,4 @@
 use std::marker;
-use std::ptr;
 use libc::{c_int, c_void};
 use {panic, raw, tree, Error, Oid, Repository, TreeEntry};
 use util::{Binding, IntoCString};
@@ -21,13 +20,6 @@ impl<'repo> TreeBuilder<'repo> {
             }
         }
     }
-    pub fn insert<P: IntoCString>(&mut self, filename: P, oid: Oid,
-                                  filemode: i32) -> Result<TreeEntry, Error> {
-        let mut ret = ptr::null();
-        unsafe {
-            Ok(tree::entry_from_raw_const(ret))
-        }
-    }
 }
 type FilterCb<'a> = FnMut(&TreeEntry) -> bool + 'a;
 extern fn filter_cb(entry: *const raw::git_tree_entry,
@@ -42,11 +34,4 @@ extern fn filter_cb(entry: *const raw::git_tree_entry,
         }
     });
     if ret == Some(false) {1} else {0}
-}
-impl<'repo> Binding for TreeBuilder<'repo> {
-    type Raw = *mut raw::git_treebuilder;
-    unsafe fn from_raw(raw: *mut raw::git_treebuilder) -> TreeBuilder<'repo> {
-        TreeBuilder { raw: raw, _marker: marker::PhantomData }
-    }
-    fn raw(&self) -> *mut raw::git_treebuilder { self.raw }
 }

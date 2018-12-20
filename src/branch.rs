@@ -11,13 +11,6 @@ pub struct Branches<'repo> {
 }
 impl<'repo> Branch<'repo> {
     pub fn wrap(reference: Reference) -> Branch { Branch { inner: reference } }
-    pub fn rename(&mut self, new_branch_name: &str, force: bool)
-                  -> Result<Branch<'repo>, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Branch::wrap(Binding::from_raw(ret)))
-        }
-    }
 }
 impl<'repo> Branches<'repo> {
     pub unsafe fn from_raw(raw: *mut raw::git_branch_iterator)

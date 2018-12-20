@@ -220,9 +220,6 @@ impl DiffOptions {
             old_prefix: None,
             new_prefix: None,
         };
-        assert_eq!(unsafe {
-            raw::git_diff_init_options(&mut opts.raw, 1)
-        }, 0);
         opts
     }
 }

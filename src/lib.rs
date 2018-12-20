@@ -1,8 +1,6 @@
 extern crate libc;
-extern crate url;
 extern crate libgit2_sys as raw;
 #[macro_use] extern crate bitflags;
-#[macro_use] extern crate log;
 use std::ffi::{CStr, CString};
 use std::str;
 pub use blame::{Blame, BlameHunk, BlameIter, BlameOptions};
@@ -41,12 +39,6 @@ pub use tree::{Tree, TreeEntry, TreeIter, TreeWalkMode, TreeWalkResult};
 pub use treebuilder::TreeBuilder;
 pub use odb::{Odb, OdbObject, OdbReader, OdbWriter};
 pub use util::IntoCString;
-pub enum ErrorCode {
-}
-#[derive(PartialEq, Eq, Clone, Debug, Copy)]
-pub enum ErrorClass {
-    None,
-}
 pub enum RepositoryState {
     ApplyMailboxOrRebase,
 }

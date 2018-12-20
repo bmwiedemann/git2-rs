@@ -198,13 +198,6 @@ impl ObjectType {
         call::convert(self)
     }
 }
-impl ConfigLevel {
-    pub fn from_raw(raw: raw::git_config_level_t) -> ConfigLevel {
-        match raw {
-            n => panic!("unknown config level: {}", n),
-        }
-    }
-}
 bitflags! {
     pub struct Status: u32 {
         const CURRENT = raw::GIT_STATUS_CURRENT as u32;

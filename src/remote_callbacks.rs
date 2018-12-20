@@ -5,16 +5,9 @@ use std::slice;
 use std::ptr;
 use std::str;
 use libc::{c_void, c_int, c_char, c_uint};
-
 use {raw, panic, Error, Cred, CredentialType, Oid};
 use cert::Cert;
 use util::Binding;
-
-/// A structure to contain the callbacks which are invoked when a repository is
-/// being updated or downloaded.
-///
-/// These callbacks are used to manage facilities such as authentication,
-/// transfer progress, etc.
 pub struct RemoteCallbacks<'a> {
     progress: Option<Box<TransferProgress<'a>>>,
     credentials: Option<Box<Credentials<'a>>>,
@@ -23,58 +16,20 @@ pub struct RemoteCallbacks<'a> {
     certificate_check: Option<Box<CertificateCheck<'a>>>,
     push_update_reference: Option<Box<PushUpdateReference<'a>>>,
 }
-
-/// Struct representing the progress by an in-flight transfer.
 pub struct Progress<'a> {
     raw: ProgressState,
     _marker: marker::PhantomData<&'a raw::git_transfer_progress>,
 }
-
 enum ProgressState {
     Borrowed(*const raw::git_transfer_progress),
     Owned(raw::git_transfer_progress),
 }
-
-/// Callback used to acquire credentials for when a remote is fetched.
-///
-/// * `url` - the resource for which the credentials are required.
-/// * `username_from_url` - the username that was embedded in the url, or `None`
-///                         if it was not included.
-/// * `allowed_types` - a bitmask stating which cred types are ok to return.
 pub type Credentials<'a> = FnMut(&str, Option<&str>, CredentialType)
                                  -> Result<Cred, Error> + 'a;
-
-/// Callback to be invoked while a transfer is in progress.
-///
-/// This callback will be periodically called with updates to the progress of
-/// the transfer so far. The return value indicates whether the transfer should
-/// continue. A return value of `false` will cancel the transfer.
-///
-/// * `progress` - the progress being made so far.
 pub type TransferProgress<'a> = FnMut(Progress) -> bool + 'a;
-
-/// Callback for receiving messages delivered by the transport.
-///
-/// The return value indicates whether the network operation should continue.
 pub type TransportMessage<'a> = FnMut(&[u8]) -> bool + 'a;
-
-/// Callback for whenever a reference is updated locally.
 pub type UpdateTips<'a> = FnMut(&str, Oid, Oid) -> bool + 'a;
-
-/// Callback for a custom certificate check.
-///
-/// The first argument is the certificate receved on the connection.
-/// Certificates are typically either an SSH or X509 certificate.
-///
-/// The second argument is the hostname for the connection is passed as the last
-/// argument.
 pub type CertificateCheck<'a> = FnMut(&Cert, &str) -> bool + 'a;
-
-/// Callback for each updated reference on push.
-///
-/// The first argument here is the `refname` of the reference, and the second is
-/// the status message sent by a server. If the status is `Some` then the update
-/// was rejected by the remote server with a reason why.
 pub type PushUpdateReference<'a> = FnMut(&str, Option<&str>) -> Result<(), Error> + 'a;
 
 impl<'a> Default for RemoteCallbacks<'a> {
@@ -84,7 +39,6 @@ impl<'a> Default for RemoteCallbacks<'a> {
 }
 
 impl<'a> RemoteCallbacks<'a> {
-    /// Creates a new set of empty callbacks
     pub fn new() -> RemoteCallbacks<'a> {
         RemoteCallbacks {
             credentials: None,
@@ -246,7 +200,6 @@ impl<'a> Binding for Progress<'a> {
             _marker: marker::PhantomData,
         }
     }
-
     fn raw(&self) -> *const raw::git_transfer_progress {
         match self.raw {
             ProgressState::Borrowed(raw) => raw,
@@ -254,7 +207,6 @@ impl<'a> Binding for Progress<'a> {
         }
     }
 }
-
 extern fn credentials_cb(ret: *mut *mut raw::git_cred,
                          url: *const c_char,
                          username_from_url: *const c_char,
@@ -314,7 +266,6 @@ extern fn transfer_progress_cb(stats: *const raw::git_transfer_progress,
     });
     if ok == Some(true) {0} else {-1}
 }
-
 extern fn sideband_progress_cb(str: *const c_char,
                                len: c_int,
                                payload: *mut c_void) -> c_int {
@@ -329,7 +280,6 @@ extern fn sideband_progress_cb(str: *const c_char,
     });
     if ok == Some(true) {0} else {-1}
 }
-
 extern fn update_tips_cb(refname: *const c_char,
                          a: *const raw::git_oid,
                          b: *const raw::git_oid,
@@ -366,7 +316,6 @@ extern fn certificate_check_cb(cert: *mut raw::git_cert,
     });
     if ok == Some(true) {0} else {-1}
 }
-
 extern fn push_update_reference_cb(refname: *const c_char,
                                    status: *const c_char,
                                    data: *mut c_void) -> c_int {

@@ -138,280 +138,39 @@ impl Config {
     /// Remove multivar config variables in the config file with the highest level (usually the
     /// local one).
     pub fn remove_multivar(&mut self, name: &str, regexp: &str) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        let regexp = try!(CString::new(regexp));
-        unsafe {
-            try_call!(raw::git_config_delete_multivar(self.raw, name, regexp));
-        }
         Ok(())
     }
-
-    /// Get the value of a boolean config variable.
-    ///
-    /// All config files will be looked into, in the order of their defined
-    /// level. A higher level means a higher priority. The first occurrence of
-    /// the variable will be returned here.
-    pub fn get_bool(&self, name: &str) -> Result<bool, Error> {
-        let mut out = 0 as libc::c_int;
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_bool(&mut out, &*self.raw, name));
-
-        }
-        Ok(!(out == 0))
-    }
-
-    /// Get the value of an integer config variable.
-    ///
-    /// All config files will be looked into, in the order of their defined
-    /// level. A higher level means a higher priority. The first occurrence of
-    /// the variable will be returned here.
-    pub fn get_i32(&self, name: &str) -> Result<i32, Error> {
-        let mut out = 0i32;
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_int32(&mut out, &*self.raw, name));
-
-        }
-        Ok(out)
-    }
-
-    /// Get the value of an integer config variable.
-    ///
-    /// All config files will be looked into, in the order of their defined
-    /// level. A higher level means a higher priority. The first occurrence of
-    /// the variable will be returned here.
-    pub fn get_i64(&self, name: &str) -> Result<i64, Error> {
-        let mut out = 0i64;
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_int64(&mut out, &*self.raw, name));
-        }
-        Ok(out)
-    }
-
-    /// Get the value of a string config variable.
-    ///
-    /// This is the same as `get_bytes` except that it may return `Err` if
-    /// the bytes are not valid utf-8.
-    pub fn get_str(&self, name: &str) -> Result<&str, Error> {
-        str::from_utf8(try!(self.get_bytes(name))).map_err(|_| {
-            Error::from_str("configuration value is not valid utf8")
-        })
-    }
-
-    /// Get the value of a string config variable as a byte slice.
-    ///
-    /// This method will return an error if this `Config` is not a snapshot.
     pub fn get_bytes(&self, name: &str) -> Result<&[u8], Error> {
         let mut ret = ptr::null();
-        let name = try!(CString::new(name));
         unsafe {
-            try_call!(raw::git_config_get_string(&mut ret, &*self.raw, name));
             Ok(::opt_bytes(self, ret).unwrap())
         }
     }
-
-    /// Get the value of a string config variable as an owned string.
-    ///
-    /// An error will be returned if the config value is not valid utf-8.
     pub fn get_string(&self, name: &str) -> Result<String, Error> {
         let ret = Buf::new();
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_string_buf(ret.raw(), self.raw, name));
-        }
         str::from_utf8(&ret).map(|s| s.to_string()).map_err(|_| {
             Error::from_str("configuration value is not valid utf8")
         })
     }
-
-    /// Get the value of a path config variable as an owned .
-    pub fn get_path(&self, name: &str) -> Result<PathBuf, Error> {
-        let ret = Buf::new();
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_path(ret.raw(), self.raw, name));
-        }
-        Ok(::util::bytes2path(&ret).to_path_buf())
-    }
-
-    /// Get the ConfigEntry for a config variable.
-    pub fn get_entry(&self, name: &str) -> Result<ConfigEntry, Error> {
-        let mut ret = ptr::null_mut();
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_get_entry(&mut ret, self.raw, name));
-            Ok(Binding::from_raw(ret))
-        }
-    }
-
-    /// Iterate over all the config variables
-    ///
-    /// If `glob` is `Some`, then the iterator will only iterate over all
-    /// variables whose name matches the pattern.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # #![allow(unstable)]
-    /// use git2::Config;
-    ///
-    /// let cfg = Config::new().unwrap();
-    ///
-    /// for entry in &cfg.entries(None).unwrap() {
-    ///     let entry = entry.unwrap();
-    ///     println!("{} => {}", entry.name().unwrap(), entry.value().unwrap());
-    /// }
-    /// ```
     pub fn entries(&self, glob: Option<&str>) -> Result<ConfigEntries, Error> {
         let mut ret = ptr::null_mut();
         unsafe {
             match glob {
                 Some(s) => {
-                    let s = try!(CString::new(s));
-                    try_call!(raw::git_config_iterator_glob_new(&mut ret,
-                                                                &*self.raw,
-                                                                s));
                 }
                 None => {
-                    try_call!(raw::git_config_iterator_new(&mut ret, &*self.raw));
                 }
             }
             Ok(Binding::from_raw(ret))
         }
     }
-
-    /// Open the global/XDG configuration file according to git's rules
-    ///
-    /// Git allows you to store your global configuration at `$HOME/.config` or
-    /// `$XDG_CONFIG_HOME/git/config`. For backwards compatability, the XDG file
-    /// shouldn't be used unless the use has created it explicitly. With this
-    /// function you'll open the correct one to write to.
     pub fn open_global(&mut self) -> Result<Config, Error> {
         let mut raw = ptr::null_mut();
         unsafe {
-            try_call!(raw::git_config_open_global(&mut raw, self.raw));
             Ok(Binding::from_raw(raw))
         }
-    }
-
-    /// Build a single-level focused config object from a multi-level one.
-    ///
-    /// The returned config object can be used to perform get/set/delete
-    /// operations on a single specific level.
-    pub fn open_level(&self, level: ConfigLevel) -> Result<Config, Error> {
-        let mut raw = ptr::null_mut();
-        unsafe {
-            try_call!(raw::git_config_open_level(&mut raw, &*self.raw, level));
-            Ok(Binding::from_raw(raw))
-        }
-    }
-
-    /// Set the value of a boolean config variable in the config file with the
-    /// highest level (usually the local one).
-    pub fn set_bool(&mut self, name: &str, value: bool) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_set_bool(self.raw, name, value));
-        }
-        Ok(())
-    }
-
-    /// Set the value of an integer config variable in the config file with the
-    /// highest level (usually the local one).
-    pub fn set_i32(&mut self, name: &str, value: i32) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_set_int32(self.raw, name, value));
-        }
-        Ok(())
-    }
-
-    /// Set the value of an integer config variable in the config file with the
-    /// highest level (usually the local one).
-    pub fn set_i64(&mut self, name: &str, value: i64) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        unsafe {
-            try_call!(raw::git_config_set_int64(self.raw, name, value));
-        }
-        Ok(())
-    }
-
-    /// Set the value of an multivar config variable in the config file with the
-    /// highest level (usually the local one).
-    pub fn set_multivar(&mut self, name: &str, regexp: &str, value: &str) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        let regexp = try!(CString::new(regexp));
-        let value = try!(CString::new(value));
-        unsafe {
-            try_call!(raw::git_config_set_multivar(self.raw, name, regexp, value));
-        }
-        Ok(())
-    }
-
-    /// Set the value of a string config variable in the config file with the
-    /// highest level (usually the local one).
-    pub fn set_str(&mut self, name: &str, value: &str) -> Result<(), Error> {
-        let name = try!(CString::new(name));
-        let value = try!(CString::new(value));
-        unsafe {
-            try_call!(raw::git_config_set_string(self.raw, name, value));
-        }
-        Ok(())
-    }
-
-    /// Create a snapshot of the configuration
-    ///
-    /// Create a snapshot of the current state of a configuration, which allows
-    /// you to look into a consistent view of the configuration for looking up
-    /// complex values (e.g. a remote, submodule).
-    pub fn snapshot(&mut self) -> Result<Config, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            try_call!(raw::git_config_snapshot(&mut ret, self.raw));
-            Ok(Binding::from_raw(ret))
-        }
-    }
-
-    /// Parse a string as a bool.
-    /// Interprets "true", "yes", "on", 1, or any non-zero number as true.
-    /// Interprets "false", "no", "off", 0, or an empty string as false.
-    pub fn parse_bool<S: IntoCString>(s: S) -> Result<bool, Error> {
-        let s = try!(s.into_c_string());
-        let mut out = 0;
-        ::init();
-        unsafe {
-            try_call!(raw::git_config_parse_bool(&mut out, s));
-        }
-        Ok(out != 0)
-    }
-
-    /// Parse a string as an i32; handles suffixes like k, M, or G, and
-    /// multiplies by the appropriate power of 1024.
-    pub fn parse_i32<S: IntoCString>(s: S) -> Result<i32, Error> {
-        let s = try!(s.into_c_string());
-        let mut out = 0;
-        ::init();
-        unsafe {
-            try_call!(raw::git_config_parse_int32(&mut out, s));
-        }
-        Ok(out)
-    }
-
-    /// Parse a string as an i64; handles suffixes like k, M, or G, and
-    /// multiplies by the appropriate power of 1024.
-    pub fn parse_i64<S: IntoCString>(s: S) -> Result<i64, Error> {
-        let s = try!(s.into_c_string());
-        let mut out = 0;
-        ::init();
-        unsafe {
-            try_call!(raw::git_config_parse_int64(&mut out, s));
-        }
-        Ok(out)
     }
 }
-
 impl Binding for Config {
     type Raw = *mut raw::git_config;
     unsafe fn from_raw(raw: *mut raw::git_config) -> Config {
@@ -419,48 +178,8 @@ impl Binding for Config {
     }
     fn raw(&self) -> *mut raw::git_config { self.raw }
 }
-
-impl Drop for Config {
-    fn drop(&mut self) {
-        unsafe { raw::git_config_free(self.raw) }
-    }
-}
-
-impl<'cfg> ConfigEntry<'cfg> {
-    /// Gets the name of this entry.
-    ///
-    /// May return `None` if the name is not valid utf-8
-    pub fn name(&self) -> Option<&str> { str::from_utf8(self.name_bytes()).ok() }
-
-    /// Gets the name of this entry as a byte slice.
-    pub fn name_bytes(&self) -> &[u8] {
-        unsafe { ::opt_bytes(self, (*self.raw).name).unwrap() }
-    }
-
-    /// Gets the value of this entry.
-    ///
-    /// May return `None` if the value is not valid utf-8
-    pub fn value(&self) -> Option<&str> { str::from_utf8(self.value_bytes()).ok() }
-
-    /// Gets the value of this entry as a byte slice.
-    pub fn value_bytes(&self) -> &[u8] {
-        unsafe { ::opt_bytes(self, (*self.raw).value).unwrap() }
-    }
-
-    /// Gets the configuration level of this entry.
-    pub fn level(&self) -> ConfigLevel {
-        unsafe { ConfigLevel::from_raw((*self.raw).level) }
-    }
-
-	/// Depth of includes where this variable was found
-    pub fn include_depth(&self) -> u32 {
-        unsafe { (*self.raw).include_depth as u32 }
-    }
-}
-
 impl<'cfg> Binding for ConfigEntry<'cfg> {
     type Raw = *mut raw::git_config_entry;
-
     unsafe fn from_raw(raw: *mut raw::git_config_entry)
                            -> ConfigEntry<'cfg> {
         ConfigEntry {

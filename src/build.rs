@@ -1,6 +1,5 @@
 use std::ffi::{CStr, CString};
 use std::path::Path;
-use std::ptr;
 use libc::{c_char, size_t, c_void, c_uint, c_int};
 use {raw, panic, Error, Repository, FetchOptions, IntoCString};
 use {CheckoutNotificationType, DiffFile, Remote};
@@ -51,12 +50,6 @@ impl<'cb> RepoBuilder<'cb> {
             remote_create: None,
         }
     }
-    pub fn clone(&mut self, url: &str, into: &Path) -> Result<Repository, Error> {
-        let mut raw = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(raw))
-        }
-    }
 }
 extern fn remote_create_cb(out: *mut *mut raw::git_remote,
                            repo: *mut raw::git_repository,
@@ -96,8 +89,6 @@ impl<'cb> CheckoutBuilder<'cb> {
             notify: None,
             notify_flags: CheckoutNotificationType::empty(),
         }
-    }
-    pub unsafe fn configure(&mut self, opts: &mut raw::git_checkout_options) {
     }
 }
 extern fn notify_cb(why: raw::git_checkout_notify_t,

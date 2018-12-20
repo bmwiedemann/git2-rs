@@ -1,5 +1,4 @@
 use std::marker;
-use std::mem;
 use {raw, Oid, Commit, FileFavor};
 use util::Binding;
 pub struct AnnotatedCommit<'repo> {
@@ -10,12 +9,6 @@ pub struct MergeOptions {
     raw: raw::git_merge_options,
 }
 impl MergeOptions {
-    pub fn new() -> MergeOptions {
-        let mut opts = MergeOptions {
-            raw: unsafe { mem::zeroed() },
-        };
-        opts
-    }
     pub unsafe fn raw(&self) -> *const raw::git_merge_options {
         &self.raw as *const _
     }

@@ -43,18 +43,6 @@ impl <'repo> Rebase<'repo> {
             Some(cur)
         }
     }
-    pub fn inmemory_index(&mut self) -> Result<Index, Error> {
-        let mut idx = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(idx))
-        }
-    }
-    pub fn commit(&mut self, author: &Signature, committer: &Signature, message: &str) -> Result<Oid, Error> {
-        let mut id: raw::git_oid = unsafe { mem::zeroed() };
-        unsafe {
-            Ok(Binding::from_raw(&id as *const _))
-        }
-    }
 }
 impl <'rebase> Iterator for Rebase<'rebase> {
     type Item = Result<RebaseOperation<'rebase>, Error>;
@@ -78,7 +66,6 @@ impl<'repo> Binding for Rebase<'repo> {
 }
 pub enum RebaseOperationType {
 }
-#[derive(Debug)]
 pub struct RebaseOperation<'rebase> {
     raw: *const raw::git_rebase_operation,
     _marker: marker::PhantomData<Rebase<'rebase>>,

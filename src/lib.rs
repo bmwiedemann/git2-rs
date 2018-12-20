@@ -198,13 +198,6 @@ impl ObjectType {
         call::convert(self)
     }
 }
-impl ReferenceType {
-    pub fn from_raw(raw: raw::git_ref_t) -> Option<ReferenceType> {
-        match raw {
-            _ => None,
-        }
-    }
-}
 impl ConfigLevel {
     pub fn from_raw(raw: raw::git_config_level_t) -> ConfigLevel {
         match raw {

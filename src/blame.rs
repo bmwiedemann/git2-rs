@@ -3,7 +3,6 @@ use {raw, Repository, Oid, signature, Signature};
 use util::{self, Binding};
 use std::path::Path;
 use std::ops::Range;
-use std::mem;
 pub struct Blame<'repo> {
     raw: *mut raw::git_blame,
     _marker: marker::PhantomData<&'repo Repository>,
@@ -58,12 +57,6 @@ impl<'blame> BlameHunk<'blame> {
             }
         }
     }
-    pub fn new() -> BlameOptions {
-        unsafe {
-            let mut raw: raw::git_blame_options = mem::zeroed();
-            Binding::from_raw(&raw as *const _ as *mut _)
-        }
-    }
 }
 impl<'repo> Binding for Blame<'repo> {
     type Raw = *mut raw::git_blame;
@@ -92,10 +85,5 @@ impl<'blame> Iterator for BlameIter<'blame> {
     type Item = BlameHunk<'blame>;
     fn next(&mut self) -> Option<BlameHunk<'blame>> {
         self.range.next().and_then(|i| self.blame.get_index(i))
-    }
-}
-impl<'blame> DoubleEndedIterator for BlameIter<'blame> {
-    fn next_back(&mut self) -> Option<BlameHunk<'blame>> {
-        self.range.next_back().and_then(|i| self.blame.get_index(i))
     }
 }

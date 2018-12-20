@@ -1,5 +1,4 @@
 use std::marker;
-use std::mem;
 use std::slice;
 use std::io;
 use {raw, Oid, Object, Error};
@@ -16,11 +15,6 @@ impl<'repo> Blob<'repo> {
             slice::from_raw_parts(data, len)
         }
     }
-    pub fn as_object(&self) -> &Object<'repo> {
-        unsafe {
-            mem::transmute(self)
-        }
-    }
 }
 impl<'repo> Binding for Blob<'repo> {
     type Raw = *mut raw::git_blob;
@@ -32,28 +26,10 @@ impl<'repo> Binding for Blob<'repo> {
     }
     fn raw(&self) -> *mut raw::git_blob { self.raw }
 }
-impl<'repo> Clone for Blob<'repo> {
-    fn clone(&self) -> Self {
-        self.as_object().clone().into_blob().ok().unwrap()
-    }
-}
-impl<'repo> Drop for Blob<'repo> {
-    fn drop(&mut self) {
-        unsafe { raw::git_blob_free(self.raw) }
-    }
-}
 pub struct BlobWriter<'repo> {
     raw: *mut raw::git_writestream,
     need_cleanup: bool,
     _marker: marker::PhantomData<Object<'repo>>,
-}
-impl<'repo> BlobWriter<'repo> {
-    pub fn commit(mut self) -> Result<Oid, Error> {
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        unsafe {
-            Ok(Binding::from_raw(&raw as *const _))
-        }
-    }
 }
 impl<'repo> Binding for BlobWriter<'repo> {
     type Raw = *mut raw::git_writestream;

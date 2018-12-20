@@ -18,24 +18,6 @@ impl<'repo> Branch<'repo> {
             Ok(Branch::wrap(Binding::from_raw(ret)))
         }
     }
-    pub fn name_bytes(&self) -> Result<&[u8], Error> {
-        let mut ret = ptr::null();
-        unsafe {
-            Ok(::opt_bytes(self, ret).unwrap())
-        }
-    }
-    pub fn upstream<'a>(&'a self) -> Result<Branch<'a>, Error> {
-        let mut ret = ptr::null_mut();
-        unsafe {
-            Ok(Branch::wrap(Binding::from_raw(ret)))
-        }
-    }
-    pub fn set_upstream(&mut self,
-                        upstream_name: Option<&str>) -> Result<(), Error> {
-        unsafe {
-            Ok(())
-        }
-    }
 }
 impl<'repo> Branches<'repo> {
     pub unsafe fn from_raw(raw: *mut raw::git_branch_iterator)

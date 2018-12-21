@@ -24,29 +24,13 @@ pub fn try(ret: libc::c_int) -> Result<libc::c_int, Error> {
 }
 mod impls {
     use {raw, ObjectType};
-    use {FetchPrune};
     use call::Convert;
     impl<T: Copy> Convert<T> for T {
         fn convert(&self) -> T { *self }
     }
     impl Convert<raw::git_otype> for ObjectType {
         fn convert(&self) -> raw::git_otype {
-            match *self {
-                ObjectType::Any => raw::GIT_OBJ_ANY,
-                ObjectType::Commit => raw::GIT_OBJ_COMMIT,
-                ObjectType::Tree => raw::GIT_OBJ_TREE,
-                ObjectType::Blob => raw::GIT_OBJ_BLOB,
-                ObjectType::Tag => raw::GIT_OBJ_TAG,
-            }
-        }
-    }
-    impl Convert<raw::git_fetch_prune_t> for FetchPrune {
-        fn convert(&self) -> raw::git_fetch_prune_t {
-            match *self {
-                FetchPrune::Unspecified => raw::GIT_FETCH_PRUNE_UNSPECIFIED,
-                FetchPrune::On => raw::GIT_FETCH_PRUNE,
-                FetchPrune::Off => raw::GIT_FETCH_NO_PRUNE,
-            }
+            raw::GIT_OBJ_TAG
         }
     }
 }

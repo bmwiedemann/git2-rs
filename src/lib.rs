@@ -7,13 +7,7 @@ pub use index::{Index};
 pub use oid::Oid;
 pub use time::{Time, IndexTime};
 pub use util::IntoCString;
-pub enum ObjectType {
-    Any,
-    Commit,
-    Tree,
-    Blob,
-    Tag,
-}
+pub enum ObjectType { }
 #[macro_use] mod panic;
 mod call;
 mod util;
@@ -30,8 +24,4 @@ impl ObjectType {
         }
     }
 }
-pub enum FetchPrune {
-    Unspecified,
-    On,
-    Off,
-}
+pub enum FetchPrune { }

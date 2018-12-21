@@ -4,12 +4,9 @@ use std::ffi::{CStr};
 use std::str;
 pub use error::Error;
 pub use index::{Index};
-pub use object::Object;
 pub use oid::Oid;
 pub use repo::{Repository};
-pub use revspec::Revspec;
 pub use time::{Time, IndexTime};
-pub use tree::{Tree};
 pub use util::IntoCString;
 pub enum RepositoryState {
     ApplyMailboxOrRebase,
@@ -37,12 +34,9 @@ mod call;
 mod util;
 mod error;
 mod index;
-mod object;
 mod oid;
 mod repo;
-mod revspec;
 mod time;
-mod tree;
 impl ObjectType {
     pub fn str(&self) -> &'static str {
         unsafe {
@@ -62,10 +56,6 @@ pub enum SubmoduleIgnore {
 pub enum DiffFormat {
 }
 pub enum AutotagOption {
-    Unspecified,
-    Auto,
-    None,
-    All,
 }
 pub enum FetchPrune {
     Unspecified,

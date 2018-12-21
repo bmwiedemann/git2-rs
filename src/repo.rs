@@ -2,7 +2,7 @@ use std::ffi::{CString};
 use std::mem;
 use std::ptr;
 use libc::{c_int};
-use {raw, Revspec, Error, RepositoryState};
+use {raw, Error, RepositoryState};
 use util::{self, Binding};
 pub struct Repository {
     raw: *mut raw::git_repository,
@@ -17,18 +17,6 @@ pub struct RepositoryInitOptions {
     origin_url: Option<CString>,
 }
 impl Repository {
-    pub fn revparse(&self, spec: &str) -> Result<Revspec, Error> {
-        let mut raw = raw::git_revspec {
-            from: ptr::null_mut(),
-            to: ptr::null_mut(),
-            flags: 0,
-        };
-        unsafe {
-            let to = Binding::from_raw_opt(raw.to);
-            let from = Binding::from_raw_opt(raw.from);
-            Ok(Revspec::from_objects(from, to))
-        }
-    }
     pub fn state(&self) -> RepositoryState {
         let state = unsafe { raw::git_repository_state(self.raw) };
         macro_rules! check( ($($raw:ident => $real:ident),*) => (

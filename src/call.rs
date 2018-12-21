@@ -23,8 +23,8 @@ pub fn try(ret: libc::c_int) -> Result<libc::c_int, Error> {
     }
 }
 mod impls {
-    use {raw, ConfigLevel, ResetType, ObjectType, BranchType, Direction};
-    use {DiffFormat, FileFavor, SubmoduleIgnore, AutotagOption, FetchPrune};
+    use {raw, ObjectType};
+    use {FetchPrune};
     use call::Convert;
     impl<T: Copy> Convert<T> for T {
         fn convert(&self) -> T { *self }

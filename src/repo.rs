@@ -3,7 +3,6 @@ use std::mem;
 use std::ptr;
 use libc::{c_int};
 use {raw, Revspec, Error, RepositoryState};
-use {RevparseMode};
 use util::{self, Binding};
 pub struct Repository {
     raw: *mut raw::git_repository,
@@ -27,8 +26,7 @@ impl Repository {
         unsafe {
             let to = Binding::from_raw_opt(raw.to);
             let from = Binding::from_raw_opt(raw.from);
-            let mode = RevparseMode::from_bits_truncate(raw.flags as u32);
-            Ok(Revspec::from_objects(from, to, mode))
+            Ok(Revspec::from_objects(from, to))
         }
     }
     pub fn state(&self) -> RepositoryState {

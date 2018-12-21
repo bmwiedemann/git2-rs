@@ -1,6 +1,5 @@
 extern crate libc;
 extern crate libgit2_sys as raw;
-#[macro_use] extern crate bitflags;
 use std::ffi::{CStr};
 use std::str;
 pub use error::Error;
@@ -32,16 +31,6 @@ pub enum BranchType {
 pub enum ConfigLevel {
 }
 pub enum FileFavor {
-}
-bitflags! {
-    pub struct IndexAddOption: u32 {
-        const DEFAULT = raw::GIT_INDEX_ADD_DEFAULT as u32;
-    }
-}
-bitflags! {
-    pub struct RevparseMode: u32 {
-        const SINGLE = raw::GIT_REVPARSE_SINGLE as u32;
-    }
 }
 #[macro_use] mod panic;
 mod call;

@@ -3,7 +3,7 @@ use std::path::Path;
 use std::ptr;
 use std::slice;
 use libc::{c_int, c_uint, size_t, c_void, c_char};
-use {raw, panic, Error, Oid, IndexAddOption, IndexTime};
+use {raw, panic, Error, Oid, IndexTime};
 use IntoCString;
 use util::{self, Binding};
 pub struct Index {
@@ -74,7 +74,6 @@ impl Index {
     }
     pub fn add_all<T, I>(&mut self,
                          pathspecs: I,
-                         flag: IndexAddOption,
                          mut cb: Option<&mut IndexMatchedPath>)
                          -> Result<(), Error>
         where T: IntoCString, I: IntoIterator<Item=T>,
@@ -87,7 +86,7 @@ impl Index {
         unsafe {
             try_call!(raw::git_index_add_all(self.raw,
                                              &raw_strarray,
-                                             flag.bits() as c_uint,
+                                             0 as c_uint,
                                              callback,
                                              ptr.map(|p| p as *mut _)
                                                 .unwrap_or(ptr::null_mut())

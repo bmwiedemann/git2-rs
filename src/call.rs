@@ -69,39 +69,6 @@ mod impls {
             }
         }
     }
-    impl Convert<raw::git_diff_format_t> for DiffFormat {
-        fn convert(&self) -> raw::git_diff_format_t {
-            match *self {
-                DiffFormat::Patch => raw::GIT_DIFF_FORMAT_PATCH,
-                DiffFormat::PatchHeader => raw::GIT_DIFF_FORMAT_PATCH_HEADER,
-                DiffFormat::Raw => raw::GIT_DIFF_FORMAT_RAW,
-                DiffFormat::NameOnly => raw::GIT_DIFF_FORMAT_NAME_ONLY,
-                DiffFormat::NameStatus => raw::GIT_DIFF_FORMAT_NAME_STATUS,
-            }
-        }
-    }
-    impl Convert<raw::git_merge_file_favor_t> for FileFavor {
-        fn convert(&self) -> raw::git_merge_file_favor_t {
-            match *self {
-                FileFavor::Normal => raw::GIT_MERGE_FILE_FAVOR_NORMAL,
-                FileFavor::Ours => raw::GIT_MERGE_FILE_FAVOR_OURS,
-                FileFavor::Theirs => raw::GIT_MERGE_FILE_FAVOR_THEIRS,
-                FileFavor::Union => raw::GIT_MERGE_FILE_FAVOR_UNION,
-            }
-        }
-    }
-    impl Convert<raw::git_submodule_ignore_t> for SubmoduleIgnore {
-        fn convert(&self) -> raw::git_submodule_ignore_t {
-            match *self {
-                SubmoduleIgnore::Unspecified =>
-                    raw::GIT_SUBMODULE_IGNORE_UNSPECIFIED,
-                SubmoduleIgnore::None => raw::GIT_SUBMODULE_IGNORE_NONE,
-                SubmoduleIgnore::Untracked => raw::GIT_SUBMODULE_IGNORE_UNTRACKED,
-                SubmoduleIgnore::Dirty => raw::GIT_SUBMODULE_IGNORE_DIRTY,
-                SubmoduleIgnore::All => raw::GIT_SUBMODULE_IGNORE_ALL,
-            }
-        }
-    }
     impl Convert<raw::git_remote_autotag_option_t> for AutotagOption {
         fn convert(&self) -> raw::git_remote_autotag_option_t {
             match *self {

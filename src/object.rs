@@ -22,16 +22,6 @@ impl<'repo> Object<'repo> {
                 other
             })
         } else {
-            Err(self)
-        }
-    }
-    fn cast_or_panic<T>(self, kind: ObjectType) -> T {
-        if self.kind() == Some(kind) {
-            unsafe {
-                let other = ptr::read(&self as *const _ as *const T);
-                other
-            }
-        } else {
             let buf;
             let akind = match self.kind() {
                 Some(akind) => akind.str(),

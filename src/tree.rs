@@ -3,20 +3,12 @@ use std::marker;
 use {panic, raw, Oid, Repository, Error, Object, ObjectType};
 use util::{Binding, IntoCString};
 pub struct Tree<'repo> {
-    raw: *mut raw::git_tree,
     _marker: marker::PhantomData<Object<'repo>>,
 }
 pub struct TreeEntry<'tree> {
     raw: *mut raw::git_tree_entry,
     owned: bool,
     _marker: marker::PhantomData<&'tree raw::git_tree_entry>,
-}
-impl<'repo> Binding for Tree<'repo> {
-    type Raw = *mut raw::git_tree;
-    unsafe fn from_raw(raw: *mut raw::git_tree) -> Tree<'repo> {
-        Tree { raw: raw, _marker: marker::PhantomData }
-    }
-    fn raw(&self) -> *mut raw::git_tree { self.raw }
 }
 impl<'a> Binding for TreeEntry<'a> {
     type Raw = *mut raw::git_tree_entry;

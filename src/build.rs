@@ -5,14 +5,7 @@ use {raw, panic, Error, Repository, FetchOptions, IntoCString};
 use {CheckoutNotificationType, DiffFile, Remote};
 use util::{self, Binding};
 pub struct RepoBuilder<'cb> {
-    bare: bool,
-    branch: Option<CString>,
-    local: bool,
-    hardlinks: bool,
     checkout: Option<CheckoutBuilder<'cb>>,
-    fetch_opts: Option<FetchOptions<'cb>>,
-    clone_local: Option<CloneLocal>,
-    remote_create: Option<Box<RemoteCreate<'cb>>>,
 }
 pub type RemoteCreate<'cb> = for<'a> FnMut(&'a Repository, &str, &str)
     -> Result<Remote<'a>, Error> + 'cb;
@@ -35,22 +28,6 @@ pub type Progress<'a> = FnMut(Option<&Path>, usize, usize) + 'a;
 pub type Notify<'a> = FnMut(CheckoutNotificationType, Option<&Path>,
                             Option<DiffFile>, Option<DiffFile>,
                             Option<DiffFile>) -> bool + 'a;
-pub enum CloneLocal {
-}
-impl<'cb> RepoBuilder<'cb> {
-    pub fn new() -> RepoBuilder<'cb> {
-        RepoBuilder {
-            bare: false,
-            branch: None,
-            local: true,
-            clone_local: None,
-            hardlinks: true,
-            checkout: None,
-            fetch_opts: None,
-            remote_create: None,
-        }
-    }
-}
 extern fn remote_create_cb(out: *mut *mut raw::git_remote,
                            repo: *mut raw::git_repository,
                            name: *const c_char,

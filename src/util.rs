@@ -48,10 +48,3 @@ pub fn bytes2path(b: &[u8]) -> &Path {
 pub trait IntoCString {
     fn into_c_string(self) -> Result<CString, Error>;
 }
-impl<'a> IntoCString for &'a str {
-    fn into_c_string(self) -> Result<CString, Error> {
-        use std::os::unix::prelude::*;
-        let s: &OsStr = self.as_ref();
-        Ok(try!(CString::new(s.as_bytes())))
-    }
-}

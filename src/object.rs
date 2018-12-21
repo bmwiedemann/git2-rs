@@ -15,19 +15,6 @@ impl<'repo> Object<'repo> {
     pub fn kind(&self) -> Option<ObjectType> {
         ObjectType::from_raw(unsafe { raw::git_object_type(&*self.raw) })
     }
-    pub fn into_tag(self) -> Result<Tag<'repo>, Object<'repo>> {
-        self.cast_into(ObjectType::Tag)
-    }
-    pub fn into_tree(self) -> Result<Tree<'repo>, Object<'repo>> {
-        self.cast_into(ObjectType::Tree)
-    }
-    fn cast<T>(&self, kind: ObjectType) -> Option<&T> {
-        if self.kind() == Some(kind) {
-            unsafe { Some(&*(self as *const _ as *const T)) }
-        } else {
-            None
-        }
-    }
     fn cast_into<T>(self, kind: ObjectType) -> Result<T, Object<'repo>> {
         if self.kind() == Some(kind) {
             Ok(unsafe {
@@ -54,14 +41,6 @@ impl<'repo> Object<'repo> {
                 }
             };
             panic!("Expected object {} to be {} but it is {}", self.id(), kind.str(), akind)
-        }
-    }
-}
-impl<'repo> Clone for Object<'repo> {
-    fn clone(&self) -> Object<'repo> {
-        let mut raw = ptr::null_mut();
-        unsafe {
-            Binding::from_raw(raw)
         }
     }
 }

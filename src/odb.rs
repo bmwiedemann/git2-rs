@@ -1,7 +1,5 @@
 use std::marker;
 use std::io;
-use std::ptr;
-use std::slice;
 use libc::{c_char, c_int, c_void, size_t};
 use {raw, Oid, Object, ObjectType, Error};
 use panic;
@@ -20,23 +18,6 @@ impl<'repo> Binding for Odb<'repo> {
     }
     fn raw(&self) -> *mut raw::git_odb { self.raw }
 }
-impl<'repo> Odb<'repo> {
-    pub fn reader(&self, oid: Oid) -> Result<(OdbReader, usize, ObjectType), Error> {
-        let mut out = ptr::null_mut();
-        let mut size = 0usize;
-        let mut otype: raw::git_otype = ObjectType::Any.raw();
-        unsafe {
-            Ok((OdbReader::from_raw(out), size, ObjectType::from_raw(otype).unwrap()))
-        }
-    }
-    pub fn read_header(&self, oid: Oid) -> Result<(usize, ObjectType), Error> {
-        let mut size: usize = 0;
-        let mut kind_id: i32 = ObjectType::Any.raw();
-        unsafe {
-            Ok((size, ObjectType::from_raw(kind_id).unwrap()))
-        }
-    }
-}
 pub struct OdbObject<'a> {
     raw: *mut raw::git_odb_object,
     _marker: marker::PhantomData<Object<'a>>,
@@ -50,19 +31,6 @@ impl<'a> Binding for OdbObject<'a> {
         }
     }
     fn raw(&self) -> *mut raw::git_odb_object { self.raw }
-}
-impl<'a> OdbObject<'a> {
-    pub fn len(&self) -> usize {
-        unsafe { raw::git_odb_object_size(self.raw) }
-    }
-    pub fn data(&self) -> &[u8] {
-        unsafe {
-            let size = self.len();
-            let ptr : *const u8 = raw::git_odb_object_data(self.raw) as *const u8;
-            let buffer = slice::from_raw_parts(ptr, size);
-            return buffer;
-        }
-    }
 }
 pub struct OdbReader<'repo> {
     raw: *mut raw::git_odb_stream,

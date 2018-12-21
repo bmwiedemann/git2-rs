@@ -1,20 +1,9 @@
 use std::fmt;
 use std::cmp::Ordering;
 use std::str;
-use {raw, Error, ObjectType, IntoCString};
 use util::Binding;
 pub struct Oid {
     raw: raw::git_oid
-}
-impl Oid {
-    pub fn from_bytes(bytes: &[u8]) -> Result<Oid, Error> {
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        if bytes.len() != raw::GIT_OID_RAWSZ {
-            Err(Error::from_str("raw byte array must be 20 bytes"))
-        } else {
-            Ok(Oid { raw: raw })
-        }
-    }
 }
 impl Binding for Oid {
     type Raw = *const raw::git_oid;

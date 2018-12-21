@@ -1,4 +1,3 @@
-use std::marker;
 use std::slice;
 use libc::{c_int, c_uint, c_void, size_t};
 use {raw, panic, Repository, Error, Oid, Revwalk, Buf};
@@ -10,36 +9,7 @@ pub enum PackBuilderStage {
 pub type ProgressCb<'a> = FnMut(PackBuilderStage, u32, u32) -> bool + 'a;
 pub type ForEachCb<'a> = FnMut(&[u8]) -> bool + 'a;
 pub struct PackBuilder<'repo> {
-    raw: *mut raw::git_packbuilder,
     progress: Option<Box<Box<ProgressCb<'repo>>>>,
-    _marker: marker::PhantomData<&'repo Repository>,
-}
-impl<'repo> PackBuilder<'repo> {
-    pub fn object_count(&self) -> usize {
-        unsafe { raw::git_packbuilder_object_count(self.raw) }
-    }
-    pub fn hash(&self) -> Option<Oid> {
-        if self.object_count() == 0 {
-            unsafe {
-                Some(Binding::from_raw(raw::git_packbuilder_hash(self.raw)))
-            }
-        } else {
-            None
-        }
-    }
-}
-impl<'repo> Binding for PackBuilder<'repo> {
-    type Raw = *mut raw::git_packbuilder;
-    unsafe fn from_raw(ptr: *mut raw::git_packbuilder) -> PackBuilder<'repo> {
-        PackBuilder {
-            raw: ptr,
-            progress: None,
-            _marker: marker::PhantomData,
-        }
-    }
-    fn raw(&self) -> *mut raw::git_packbuilder {
-        self.raw
-    }
 }
 impl Binding for PackBuilderStage {
     type Raw = raw::git_packbuilder_stage_t;

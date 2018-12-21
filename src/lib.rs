@@ -186,9 +186,6 @@ impl ObjectType {
             _ => None,
         }
     }
-    pub fn raw(&self) -> raw::git_otype {
-        call::convert(self)
-    }
 }
 bitflags! {
     pub struct Status: u32 {

@@ -15,12 +15,9 @@ pub use diff::{Diff, DiffDelta, DiffFile, DiffOptions, Deltas};
 pub use error::Error;
 pub use index::{Index, IndexEntry, IndexEntries, IndexMatchedPath};
 pub use merge::{AnnotatedCommit, MergeOptions};
-pub use note::{Note, Notes};
 pub use object::Object;
 pub use oid::Oid;
-pub use packbuilder::{PackBuilder, PackBuilderStage};
 pub use proxy_options::ProxyOptions;
-pub use rebase::{Rebase, RebaseOptions, RebaseOperation, RebaseOperationType};
 pub use reference::{Reference, References, ReferenceNames};
 pub use reflog::{Reflog, ReflogEntry, ReflogIter};
 pub use refspec::Refspec;
@@ -29,27 +26,18 @@ pub use remote_callbacks::{RemoteCallbacks, Credentials, TransferProgress};
 pub use remote_callbacks::{TransportMessage, Progress, UpdateTips};
 pub use repo::{Repository, RepositoryInitOptions};
 pub use revspec::Revspec;
-pub use revwalk::Revwalk;
 pub use signature::Signature;
-pub use status::{StatusOptions, Statuses, StatusIter, StatusEntry, StatusShow};
 pub use submodule::{Submodule, SubmoduleUpdateOptions};
 pub use tag::Tag;
 pub use time::{Time, IndexTime};
 pub use tree::{Tree, TreeEntry, TreeIter, TreeWalkMode, TreeWalkResult};
-pub use treebuilder::TreeBuilder;
-pub use odb::{Odb, OdbObject, OdbReader, OdbWriter};
 pub use util::IntoCString;
 pub enum RepositoryState {
     ApplyMailboxOrRebase,
 }
 pub enum Direction {
-    Fetch,
-    Push,
 }
 pub enum ResetType {
-    Soft,
-    Mixed,
-    Hard,
 }
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum ObjectType {
@@ -62,8 +50,6 @@ pub enum ObjectType {
 pub enum ReferenceType {
 }
 pub enum BranchType {
-    Local,
-    Remote,
 }
 pub enum ConfigLevel {
     ProgramData,
@@ -79,11 +65,6 @@ pub enum FileFavor {
     Ours,
     Theirs,
     Union,
-}
-bitflags! {
-    pub struct Sort: u32 {
-        const NONE = raw::GIT_SORT_NONE as u32;
-    }
 }
 bitflags! {
     pub struct CredentialType: u32 {
@@ -120,8 +101,6 @@ mod call;
 mod util;
 pub mod build;
 pub mod cert;
-pub mod string_array;
-pub mod oid_array;
 mod blame;
 mod blob;
 mod branch;
@@ -134,13 +113,9 @@ mod diff;
 mod error;
 mod index;
 mod merge;
-mod note;
 mod object;
-mod odb;
 mod oid;
-mod packbuilder;
 mod proxy_options;
-mod rebase;
 mod reference;
 mod reflog;
 mod refspec;
@@ -148,15 +123,11 @@ mod remote;
 mod remote_callbacks;
 mod repo;
 mod revspec;
-mod revwalk;
 mod signature;
-mod status;
 mod submodule;
-mod stash;
 mod tag;
 mod time;
 mod tree;
-mod treebuilder;
 fn init() {
 }
 unsafe fn opt_bytes<'a, T>(_anchor: &'a T,
@@ -185,11 +156,6 @@ impl ObjectType {
         match raw {
             _ => None,
         }
-    }
-}
-bitflags! {
-    pub struct Status: u32 {
-        const CURRENT = raw::GIT_STATUS_CURRENT as u32;
     }
 }
 bitflags! {
@@ -233,9 +199,6 @@ pub enum FetchPrune {
     Unspecified,
     On,
     Off,
-}
-pub enum StashApplyProgress {
-    None,
 }
 bitflags! {
     pub struct StashFlags: u32 {

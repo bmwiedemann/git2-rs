@@ -10,6 +10,3 @@ pub fn wrap<T, F: FnOnce() -> T>(f: F) -> Option<T> {
 pub fn check() {
     let err = LAST_ERROR.with(|slot| slot.borrow_mut().take());
 }
-pub fn panicked() -> bool {
-    LAST_ERROR.with(|slot| slot.borrow().is_some())
-}

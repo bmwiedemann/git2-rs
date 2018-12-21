@@ -52,13 +52,6 @@ impl Index {
                     nanoseconds: entry.ctime.nanoseconds(),
                 },
             };
-            Ok(())
-        }
-    }
-    pub fn add_frombuffer(&mut self, entry: &IndexEntry, data: &[u8]) -> Result<(), Error> {
-       let path = try!(CString::new(&entry.path[..]));
-        let mut flags = entry.flags & !raw::GIT_IDXENTRY_NAMEMASK;
-        unsafe {
             let raw = raw::git_index_entry {
                 dev: entry.dev,
                 ino: entry.ino,
@@ -113,13 +106,6 @@ impl Index {
             if ptr.is_null() {None} else {Some(Binding::from_raw(*ptr))}
         }
     }
-}
-impl Binding for Index {
-    type Raw = *mut raw::git_index;
-    unsafe fn from_raw(raw: *mut raw::git_index) -> Index {
-        Index { raw: raw }
-    }
-    fn raw(&self) -> *mut raw::git_index { self.raw }
 }
 extern fn index_matched_path_cb(path: *const c_char,
                                 matched_pathspec: *const c_char,

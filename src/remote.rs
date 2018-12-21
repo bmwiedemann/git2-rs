@@ -43,17 +43,6 @@ impl<'repo> Remote<'repo> {
         })
     }
 }
-impl<'cb> FetchOptions<'cb> {
-    pub fn new() -> FetchOptions<'cb> {
-        FetchOptions {
-            callbacks: None,
-            proxy: None,
-            prune: FetchPrune::Unspecified,
-            update_fetchhead: true,
-            download_tags: AutotagOption::Unspecified,
-        }
-    }
-}
 impl<'cb> Binding for FetchOptions<'cb> {
     type Raw = raw::git_fetch_options;
     unsafe fn from_raw(_raw: raw::git_fetch_options) -> FetchOptions<'cb> {

@@ -4,15 +4,7 @@ use std::os::raw::c_int;
 use {raw, Oid, Repository, Error, FetchOptions};
 use util::{self, Binding};
 pub struct Submodule<'repo> {
-    raw: *mut raw::git_submodule,
     _marker: marker::PhantomData<&'repo Repository>,
-}
-impl<'repo> Binding for Submodule<'repo> {
-    type Raw = *mut raw::git_submodule;
-    unsafe fn from_raw(raw: *mut raw::git_submodule) -> Submodule<'repo> {
-        Submodule { raw: raw, _marker: marker::PhantomData }
-    }
-    fn raw(&self) -> *mut raw::git_submodule { self.raw }
 }
 pub struct SubmoduleUpdateOptions<'cb> {
     fetch_opts: FetchOptions<'cb>,

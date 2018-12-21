@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::marker;
-use {panic, raw, Oid, Repository, Error, Object, ObjectType};
+use {raw, Object};
 use util::{Binding, IntoCString};
 pub struct Tree<'repo> {
     _marker: marker::PhantomData<Object<'repo>>,

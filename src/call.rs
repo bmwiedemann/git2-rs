@@ -43,19 +43,6 @@ mod impls {
             }
         }
     }
-    impl Convert<raw::git_config_level_t> for ConfigLevel {
-        fn convert(&self) -> raw::git_config_level_t {
-            match *self {
-                ConfigLevel::ProgramData => raw::GIT_CONFIG_LEVEL_PROGRAMDATA,
-                ConfigLevel::System => raw::GIT_CONFIG_LEVEL_SYSTEM,
-                ConfigLevel::XDG => raw::GIT_CONFIG_LEVEL_XDG,
-                ConfigLevel::Global => raw::GIT_CONFIG_LEVEL_GLOBAL,
-                ConfigLevel::Local => raw::GIT_CONFIG_LEVEL_LOCAL,
-                ConfigLevel::App => raw::GIT_CONFIG_LEVEL_APP,
-                ConfigLevel::Highest => raw::GIT_CONFIG_HIGHEST_LEVEL,
-            }
-        }
-    }
     impl Convert<raw::git_remote_autotag_option_t> for AutotagOption {
         fn convert(&self) -> raw::git_remote_autotag_option_t {
             match *self {

@@ -9,9 +9,6 @@ use util::{self, Binding};
 pub struct Index {
     raw: *mut raw::git_index,
 }
-pub struct IndexEntries<'index> {
-    index: &'index Index,
-}
 pub type IndexMatchedPath<'a> = FnMut(&Path, &[u8]) -> i32 + 'a;
 pub struct IndexEntry {
     pub ctime: IndexTime,

@@ -1,79 +1,9 @@
 use std::process::{Command, Stdio};
-use std::ptr;
-use {raw, Error, Config, IntoCString};
-use util::Binding;
 pub struct Cred {
-    raw: *mut raw::git_cred,
 }
 pub struct CredentialHelper {
-    pub username: Option<String>,
-    protocol: Option<String>,
-    host: Option<String>,
-    url: String,
-    commands: Vec<String>,
-}
-impl Cred {
-    pub fn userpass_plaintext(username: &str,
-                              password: &str) -> Result<Cred, Error> {
-        let mut out = ptr::null_mut();
-        unsafe {
-            Ok(Binding::from_raw(out))
-        }
-    }
-    pub fn credential_helper(config: &Config,
-                             url: &str,
-                             username: Option<&str>)
-                             -> Result<Cred, Error> {
-        match CredentialHelper::new(url).config(config).username(username)
-                               .execute() {
-            Some((username, password)) => {
-                Cred::userpass_plaintext(&username, &password)
-            }
-            None => Err(Error::from_str("failed to acquire username/password \
-                                         from local configuration"))
-        }
-    }
-    pub fn credtype(&self) -> raw::git_credtype_t {
-        unsafe { (*self.raw).credtype }
-    }
-}
-impl Binding for Cred {
-    type Raw = *mut raw::git_cred;
-    unsafe fn from_raw(raw: *mut raw::git_cred) -> Cred {
-        Cred { raw: raw }
-    }
-    fn raw(&self) -> *mut raw::git_cred { self.raw }
 }
 impl CredentialHelper {
-    pub fn new(url: &str) -> CredentialHelper {
-        let mut ret = CredentialHelper {
-            protocol: None,
-            host: None,
-            username: None,
-            url: url.to_string(),
-            commands: Vec::new(),
-        };
-        ret
-    }
-    pub fn username(&mut self, username: Option<&str>) -> &mut CredentialHelper {
-        self
-    }
-    pub fn config(&mut self, config: &Config) -> &mut CredentialHelper {
-        self
-    }
-    pub fn execute(&self) -> Option<(String, String)> {
-        let mut username = self.username.clone();
-        let mut password = None;
-        for cmd in &self.commands {
-            let (u, p) = self.execute_cmd(cmd, &username);
-            if u.is_some() && username.is_none() {
-                password = p;
-            }
-        }
-        match (username, password) {
-            _ => None,
-        }
-    }
     fn execute_cmd(&self, cmd: &str, username: &Option<String>)
                    -> (Option<String>, Option<String>) {
         macro_rules! my_try( ($e:expr) => (

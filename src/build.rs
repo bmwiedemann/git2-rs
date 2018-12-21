@@ -4,27 +4,11 @@ use libc::{c_char, size_t, c_void, c_uint, c_int};
 use {raw, panic, Error, Repository, FetchOptions, IntoCString};
 use {CheckoutNotificationType, DiffFile, Remote};
 use util::{self, Binding};
-pub struct RepoBuilder<'cb> {
-    checkout: Option<CheckoutBuilder<'cb>>,
-}
 pub type RemoteCreate<'cb> = for<'a> FnMut(&'a Repository, &str, &str)
     -> Result<Remote<'a>, Error> + 'cb;
 pub struct CheckoutBuilder<'cb> {
-    their_label: Option<CString>,
-    our_label: Option<CString>,
-    ancestor_label: Option<CString>,
-    target_dir: Option<CString>,
-    paths: Vec<CString>,
-    path_ptrs: Vec<*const c_char>,
-    file_perm: Option<i32>,
-    dir_perm: Option<i32>,
-    disable_filters: bool,
-    checkout_opts: u32,
-    progress: Option<Box<Progress<'cb>>>,
     notify: Option<Box<Notify<'cb>>>,
-    notify_flags: CheckoutNotificationType,
 }
-pub type Progress<'a> = FnMut(Option<&Path>, usize, usize) + 'a;
 pub type Notify<'a> = FnMut(CheckoutNotificationType, Option<&Path>,
                             Option<DiffFile>, Option<DiffFile>,
                             Option<DiffFile>) -> bool + 'a;
@@ -47,25 +31,6 @@ extern fn remote_create_cb(out: *mut *mut raw::git_remote,
             }
         });
         code.unwrap_or(-1)
-    }
-}
-impl<'cb> CheckoutBuilder<'cb> {
-    pub fn new() -> CheckoutBuilder<'cb> {
-        CheckoutBuilder {
-            disable_filters: false,
-            dir_perm: None,
-            file_perm: None,
-            path_ptrs: Vec::new(),
-            paths: Vec::new(),
-            target_dir: None,
-            ancestor_label: None,
-            our_label: None,
-            their_label: None,
-            checkout_opts: raw::GIT_CHECKOUT_SAFE as u32,
-            progress: None,
-            notify: None,
-            notify_flags: CheckoutNotificationType::empty(),
-        }
     }
 }
 extern fn notify_cb(why: raw::git_checkout_notify_t,

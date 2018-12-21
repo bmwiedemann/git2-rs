@@ -5,11 +5,6 @@ use {raw, Error};
 pub trait IsNull {
     fn is_ptr_null(&self) -> bool;
 }
-impl<T> IsNull for *const T {
-    fn is_ptr_null(&self) -> bool {
-        self.is_null()
-    }
-}
 impl<T> IsNull for *mut T {
     fn is_ptr_null(&self) -> bool {
         self.is_null()

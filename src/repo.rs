@@ -1,9 +1,9 @@
-use std::ffi::{CStr, CString, OsStr};
+use std::ffi::{CStr, CString};
 use std::mem;
 use std::ptr;
-use libc::{c_int, c_char, size_t, c_void, c_uint};
-use {raw, Revspec, Error, init, Object, RepositoryOpenFlags, RepositoryState, Remote, StashFlags};
-use {RevparseMode, RepositoryInitMode, IntoCString, Describe};
+use libc::{c_int};
+use {raw, Revspec, Error, RepositoryState};
+use {RevparseMode};
 use util::{self, Binding};
 pub struct Repository {
     raw: *mut raw::git_repository,

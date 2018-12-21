@@ -71,16 +71,6 @@ bitflags! {
         const SINGLE = raw::GIT_REVPARSE_SINGLE as u32;
     }
 }
-bitflags! {
-    pub struct MergeAnalysis: u32 {
-        const ANALYSIS_NONE = raw::GIT_MERGE_ANALYSIS_NONE as u32;
-    }
-}
-bitflags! {
-    pub struct MergePreference: u32 {
-        const NONE = raw::GIT_MERGE_PREFERENCE_NONE as u32;
-    }
-}
 #[macro_use] mod panic;
 mod call;
 mod util;
@@ -104,8 +94,6 @@ mod signature;
 mod tag;
 mod time;
 mod tree;
-fn init() {
-}
 impl ObjectType {
     pub fn str(&self) -> &'static str {
         unsafe {
@@ -120,22 +108,7 @@ impl ObjectType {
         }
     }
 }
-bitflags! {
-    pub struct RepositoryInitMode: u32 {
-        const SHARED_UMASK = raw::GIT_REPOSITORY_INIT_SHARED_UMASK as u32;
-    }
-}
-bitflags! {
-    pub struct SubmoduleStatus: u32 {
-        const IN_INDEX = raw::GIT_SUBMODULE_STATUS_IN_INDEX as u32;
-    }
-}
 pub enum SubmoduleIgnore {
-}
-bitflags! {
-    pub struct CheckoutNotificationType: u32 {
-        const IGNORED = raw::GIT_CHECKOUT_NOTIFY_IGNORED as u32;
-    }
 }
 pub enum DiffFormat {
 }

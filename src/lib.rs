@@ -34,11 +34,6 @@ pub enum ConfigLevel {
 pub enum FileFavor {
 }
 bitflags! {
-    pub struct CredentialType: u32 {
-        const DEFAULT = raw::GIT_CREDTYPE_DEFAULT as u32;
-    }
-}
-bitflags! {
     pub struct IndexAddOption: u32 {
         const DEFAULT = raw::GIT_INDEX_ADD_DEFAULT as u32;
     }
@@ -87,9 +82,4 @@ pub enum FetchPrune {
     Unspecified,
     On,
     Off,
-}
-bitflags! {
-    pub struct StashFlags: u32 {
-        const DEFAULT = raw::GIT_STASH_DEFAULT as u32;
-    }
 }

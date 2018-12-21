@@ -1,9 +1,9 @@
-use std::ffi::{CStr, OsString, CString};
+use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::ptr;
 use std::slice;
 use libc::{c_int, c_uint, size_t, c_void, c_char};
-use {raw, panic, Repository, Error, Tree, Oid, IndexAddOption, IndexTime};
+use {raw, panic, Error, Oid, IndexAddOption, IndexTime};
 use IntoCString;
 use util::{self, Binding};
 pub struct Index {

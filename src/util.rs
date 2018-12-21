@@ -1,4 +1,4 @@
-use std::ffi::{CString, OsStr, OsString};
+use std::ffi::{CString, OsStr};
 use std::path::{Path, PathBuf};
 use libc::{c_char, size_t};
 use {raw, Error};

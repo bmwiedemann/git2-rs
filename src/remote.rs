@@ -1,6 +1,6 @@
 use std::marker;
 use std::ptr;
-use {raw, Direction, Error, Refspec, Oid, FetchPrune, ProxyOptions};
+use {raw, FetchPrune, ProxyOptions};
 use {RemoteCallbacks, Repository, AutotagOption};
 use util::Binding;
 pub struct Remote<'repo> {

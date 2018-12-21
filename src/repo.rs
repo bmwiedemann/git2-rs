@@ -1,14 +1,9 @@
 use std::ffi::{CStr, CString, OsStr};
 use std::mem;
-use std::path::Path;
 use std::ptr;
 use libc::{c_int, c_char, size_t, c_void, c_uint};
 use {raw, Revspec, Error, init, Object, RepositoryOpenFlags, RepositoryState, Remote, StashFlags};
-use {ResetType, Signature, Reference, References, Submodule, Blame, BlameOptions};
-use {Branches, BranchType, Index, Config, Oid, Blob, BlobWriter, Branch, Commit, Tree};
-use {AnnotatedCommit, MergeOptions, SubmoduleIgnore, SubmoduleStatus, MergeAnalysis, MergePreference};
 use {RevparseMode, RepositoryInitMode, IntoCString, Describe};
-use build::{RepoBuilder, CheckoutBuilder};
 use util::{self, Binding};
 pub struct Repository {
     raw: *mut raw::git_repository,
@@ -49,16 +44,6 @@ impl Repository {
         check!(
             GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE => ApplyMailboxOrRebase
         )
-    }
-    pub fn workdir(&self) -> Option<&Path> {
-        unsafe {
-            let ptr = raw::git_repository_workdir(self.raw);
-            if ptr.is_null() {
-                None
-            } else {
-                Some(util::bytes2path(CStr::from_ptr(ptr).to_bytes()))
-            }
-        }
     }
 }
 impl Binding for Repository {

@@ -23,8 +23,6 @@ pub fn try(ret: libc::c_int) -> Result<libc::c_int, Error> {
     }
 }
 mod impls {
-    use std::ffi::CString;
-    use std::ptr;
     use {raw, ConfigLevel, ResetType, ObjectType, BranchType, Direction};
     use {DiffFormat, FileFavor, SubmoduleIgnore, AutotagOption, FetchPrune};
     use call::Convert;
@@ -33,17 +31,6 @@ mod impls {
     }
     impl Convert<libc::c_int> for bool {
         fn convert(&self) -> libc::c_int { *self as libc::c_int }
-    }
-    impl<'a, T> Convert<*mut T> for &'a mut T {
-        fn convert(&self) -> *mut T { &**self as *const T as *mut T }
-    }
-    impl Convert<*const libc::c_char> for CString {
-        fn convert(&self) -> *const libc::c_char { self.as_ptr() }
-    }
-    impl<T, U: Convert<*const T>> Convert<*const T> for Option<U> {
-        fn convert(&self) -> *const T {
-            self.as_ref().map(|s| s.convert()).unwrap_or(ptr::null())
-        }
     }
     impl Convert<raw::git_otype> for ObjectType {
         fn convert(&self) -> raw::git_otype {

@@ -1,11 +1,8 @@
-use std::ffi::CString;
 use std::marker;
-use std::mem;
 use libc::{c_char, size_t, c_void, c_int};
 use {raw, panic, Delta, Oid, Repository, Error, DiffFormat};
 use util::{self, Binding};
 pub struct Diff<'repo> {
-    raw: *mut raw::git_diff,
     _marker: marker::PhantomData<&'repo Repository>,
 }
 pub struct DiffDelta<'a> {
@@ -17,13 +14,6 @@ pub struct DiffFile<'a> {
     _marker: marker::PhantomData<&'a raw::git_diff_file>,
 }
 pub struct DiffOptions {
-    pathspec: Vec<CString>,
-    pathspec_ptrs: Vec<*const c_char>,
-    old_prefix: Option<CString>,
-    new_prefix: Option<CString>,
-    raw: raw::git_diff_options,
-}
-pub struct DiffFindOptions {
 }
 pub struct Deltas<'diff> {
     diff: &'diff Diff<'diff>,
@@ -72,18 +62,6 @@ pub extern fn print_cb(delta: *const raw::git_diff_delta,
     }
 }
 extern fn file_cb_c(delta: *const raw::git_diff_delta,
-                    progress: f32,
-                    data: *mut c_void) -> c_int {
-    unsafe {
-        let delta = Binding::from_raw(delta as *mut _);
-        let r = panic::wrap(|| {
-            let cbs = data as *mut ForeachCallbacks;
-            ((*cbs).file)(delta, progress)
-        });
-        if r == Some(true) {0} else {-1}
-    }
-}
-extern fn binary_cb_c(delta: *const raw::git_diff_delta,
                       binary: *const raw::git_diff_binary,
                       data: *mut c_void) -> c_int {
     unsafe {
@@ -133,16 +111,6 @@ extern fn line_cb_c(delta: *const raw::git_diff_delta,
         if r == Some(true) {0} else {-1}
     }
 }
-impl<'repo> Binding for Diff<'repo> {
-    type Raw = *mut raw::git_diff;
-    unsafe fn from_raw(raw: *mut raw::git_diff) -> Diff<'repo> {
-        Diff {
-          raw: raw,
-          _marker: marker::PhantomData,
-        }
-    }
-    fn raw(&self) -> *mut raw::git_diff { self.raw }
-}
 impl<'a> Binding for DiffDelta<'a> {
     type Raw = *mut raw::git_diff_delta;
     unsafe fn from_raw(raw: *mut raw::git_diff_delta) -> DiffDelta<'a> {
@@ -162,18 +130,6 @@ impl<'a> Binding for DiffFile<'a> {
         }
     }
     fn raw(&self) -> *const raw::git_diff_file { self.raw }
-}
-impl DiffOptions {
-    pub fn new() -> DiffOptions {
-        let mut opts = DiffOptions {
-            pathspec: Vec::new(),
-            pathspec_ptrs: Vec::new(),
-            raw: unsafe { mem::zeroed() },
-            old_prefix: None,
-            new_prefix: None,
-        };
-        opts
-    }
 }
 impl<'a> Binding for DiffLine<'a> {
     type Raw = *const raw::git_diff_line;
@@ -218,14 +174,5 @@ impl Binding for DiffBinaryKind {
             DiffBinaryKind::Literal => raw::GIT_DIFF_BINARY_LITERAL,
             DiffBinaryKind::Delta => raw::GIT_DIFF_BINARY_DELTA,
         }
-    }
-}
-impl DiffFindOptions {
-    fn flag(&mut self, opt: u32, val: bool) -> &mut DiffFindOptions {
-        self
-    }
-    pub fn break_rewrites_for_renames_only(&mut self, b: bool)
-                                           -> &mut DiffFindOptions {
-        self.flag(raw::GIT_DIFF_BREAK_REWRITES_FOR_RENAMES_ONLY, b)
     }
 }

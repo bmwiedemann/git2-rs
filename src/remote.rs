@@ -1,7 +1,7 @@
 use std::marker;
 use std::ptr;
 use {raw, Direction, Error, Refspec, Oid, FetchPrune, ProxyOptions};
-use {RemoteCallbacks, Progress, Repository, AutotagOption};
+use {RemoteCallbacks, Repository, AutotagOption};
 use util::Binding;
 pub struct Remote<'repo> {
     _marker: marker::PhantomData<&'repo Repository>,
@@ -26,22 +26,7 @@ pub struct PushOptions<'cb> {
 }
 pub struct RemoteConnection<'repo, 'connection, 'cb> where 'repo: 'connection {
     _callbacks: Box<RemoteCallbacks<'cb>>,
-    _proxy: ProxyOptions<'cb>,
     remote: &'connection mut Remote<'repo>,
-}
-impl<'repo> Remote<'repo> {
-    pub fn connect_auth<'connection, 'cb>(&'connection mut self,
-                                          cb: Option<RemoteCallbacks<'cb>>,
-                                          proxy_options: Option<ProxyOptions<'cb>>)
-                    -> Result<RemoteConnection<'repo, 'connection, 'cb>, Error> {
-        let cb = Box::new(cb.unwrap_or_else(RemoteCallbacks::new));
-        let proxy_options = proxy_options.unwrap_or_else(ProxyOptions::new);
-        Ok(RemoteConnection {
-            _callbacks: cb,
-            _proxy: proxy_options,
-            remote: self,
-        })
-    }
 }
 impl<'cb> Binding for FetchOptions<'cb> {
     type Raw = raw::git_fetch_options;

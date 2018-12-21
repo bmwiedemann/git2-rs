@@ -1,34 +1,27 @@
 extern crate libc;
 extern crate libgit2_sys as raw;
 #[macro_use] extern crate bitflags;
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr};
 use std::str;
-pub use blame::{Blame, BlameHunk, BlameIter, BlameOptions};
-pub use blob::{Blob, BlobWriter};
-pub use branch::{Branch, Branches};
-pub use commit::{Commit, Parents};
-pub use config::{Config, ConfigEntry, ConfigEntries};
-pub use cred::{Cred, CredentialHelper};
-pub use describe::{Describe, DescribeFormatOptions, DescribeOptions};
-pub use diff::{Diff, DiffDelta, DiffFile, DiffOptions, Deltas};
+pub use blob::{Blob};
+pub use commit::{Commit};
+pub use config::{Config};
+pub use cred::{Cred};
+pub use describe::{Describe};
 pub use error::Error;
-pub use index::{Index, IndexEntry, IndexEntries, IndexMatchedPath};
-pub use merge::{AnnotatedCommit, MergeOptions};
+pub use index::{Index};
 pub use object::Object;
 pub use oid::Oid;
 pub use proxy_options::ProxyOptions;
-pub use reference::{Reference, References, ReferenceNames};
 pub use refspec::Refspec;
-pub use remote::{Remote, RemoteConnection, Refspecs, RemoteHead, FetchOptions, PushOptions};
-pub use remote_callbacks::{RemoteCallbacks, Credentials, TransferProgress};
-pub use remote_callbacks::{TransportMessage, Progress, UpdateTips};
-pub use repo::{Repository, RepositoryInitOptions};
+pub use remote::{Remote, FetchOptions};
+pub use remote_callbacks::{RemoteCallbacks};
+pub use repo::{Repository};
 pub use revspec::Revspec;
 pub use signature::Signature;
-pub use submodule::{Submodule, SubmoduleUpdateOptions};
 pub use tag::Tag;
 pub use time::{Time, IndexTime};
-pub use tree::{Tree, TreeEntry};
+pub use tree::{Tree};
 pub use util::IntoCString;
 pub enum RepositoryState {
     ApplyMailboxOrRebase,
@@ -45,8 +38,6 @@ pub enum ObjectType {
     Blob,
     Tag,
 }
-pub enum ReferenceType {
-}
 pub enum BranchType {
 }
 pub enum ConfigLevel {
@@ -59,10 +50,6 @@ pub enum ConfigLevel {
     Highest,
 }
 pub enum FileFavor {
-    Normal,
-    Ours,
-    Theirs,
-    Union,
 }
 bitflags! {
     pub struct CredentialType: u32 {
@@ -97,42 +84,27 @@ bitflags! {
 #[macro_use] mod panic;
 mod call;
 mod util;
-pub mod build;
 pub mod cert;
-mod blame;
 mod blob;
-mod branch;
 mod commit;
 mod config;
 mod cred;
 mod describe;
-mod diff;
 mod error;
 mod index;
-mod merge;
 mod object;
 mod oid;
 mod proxy_options;
-mod reference;
 mod refspec;
 mod remote;
 mod remote_callbacks;
 mod repo;
 mod revspec;
 mod signature;
-mod submodule;
 mod tag;
 mod time;
 mod tree;
 fn init() {
-}
-unsafe fn opt_bytes<'a, T>(_anchor: &'a T,
-                           c: *const libc::c_char) -> Option<&'a [u8]> {
-    if c.is_null() {
-        None
-    } else {
-        Some(CStr::from_ptr(c).to_bytes())
-    }
 }
 impl ObjectType {
     pub fn str(&self) -> &'static str {
@@ -153,19 +125,12 @@ bitflags! {
         const SHARED_UMASK = raw::GIT_REPOSITORY_INIT_SHARED_UMASK as u32;
     }
 }
-pub enum Delta {
-}
 bitflags! {
     pub struct SubmoduleStatus: u32 {
         const IN_INDEX = raw::GIT_SUBMODULE_STATUS_IN_INDEX as u32;
     }
 }
 pub enum SubmoduleIgnore {
-    Unspecified,
-    None,
-    Untracked,
-    Dirty,
-    All,
 }
 bitflags! {
     pub struct CheckoutNotificationType: u32 {
@@ -173,11 +138,6 @@ bitflags! {
     }
 }
 pub enum DiffFormat {
-    Patch,
-    PatchHeader,
-    Raw,
-    NameOnly,
-    NameStatus,
 }
 pub enum AutotagOption {
     Unspecified,

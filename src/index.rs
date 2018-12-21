@@ -98,14 +98,6 @@ impl Index {
         }
         Ok(())
     }
-    pub fn get_path(&self, path: &Path, stage: i32) -> Option<IndexEntry> {
-        let path = path.into_c_string().unwrap();
-        unsafe {
-            let ptr = call!(raw::git_index_get_bypath(self.raw, path,
-                                                      stage as c_int));
-            if ptr.is_null() {None} else {Some(Binding::from_raw(*ptr))}
-        }
-    }
 }
 extern fn index_matched_path_cb(path: *const c_char,
                                 matched_pathspec: *const c_char,

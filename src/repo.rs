@@ -3,11 +3,11 @@ use std::mem;
 use std::path::Path;
 use std::ptr;
 use libc::{c_int, c_char, size_t, c_void, c_uint};
-use {raw, Revspec, Error, init, Object, RepositoryOpenFlags, RepositoryState, Remote, Buf, StashFlags};
+use {raw, Revspec, Error, init, Object, RepositoryOpenFlags, RepositoryState, Remote, StashFlags};
 use {ResetType, Signature, Reference, References, Submodule, Blame, BlameOptions};
 use {Branches, BranchType, Index, Config, Oid, Blob, BlobWriter, Branch, Commit, Tree};
 use {AnnotatedCommit, MergeOptions, SubmoduleIgnore, SubmoduleStatus, MergeAnalysis, MergePreference};
-use {RevparseMode, RepositoryInitMode, Reflog, IntoCString, Describe};
+use {RevparseMode, RepositoryInitMode, IntoCString, Describe};
 use build::{RepoBuilder, CheckoutBuilder};
 use util::{self, Binding};
 pub struct Repository {
@@ -59,53 +59,6 @@ impl Repository {
                 Some(util::bytes2path(CStr::from_ptr(ptr).to_bytes()))
             }
         }
-    }
-    pub fn branch(&self,
-                  update_ref: Option<&str>,
-                  author: &Signature,
-                  committer: &Signature,
-                  message: &str,
-                  tree: &Tree,
-                  parents: &[&Commit]) -> Result<Oid, Error> {
-        let update_ref = try!(::opt_cstr(update_ref));
-        let mut parent_ptrs = parents.iter().map(|p| {
-            p.raw() as *const raw::git_commit
-        }).collect::<Vec<_>>();
-        let message = try!(CString::new(message));
-        let mut raw = raw::git_oid { id: [0; raw::GIT_OID_RAWSZ] };
-        unsafe {
-            try_call!(raw::git_commit_create(&mut raw,
-                                             self.raw(),
-                                             update_ref,
-                                             author.raw(),
-                                             committer.raw(),
-                                             ptr::null(),
-                                             message,
-                                             tree.raw(),
-                                             parents.len() as size_t,
-                                             parent_ptrs.as_mut_ptr()));
-            Ok(Binding::from_raw(&raw as *const _))
-        }
-    }
-    pub fn commit_signed(&self,
-                 annotated_commits: &[&AnnotatedCommit],
-                 merge_opts: Option<&mut MergeOptions>,
-                 checkout_opts: Option<&mut CheckoutBuilder>)
-                 -> Result<(), Error>
-    {
-        unsafe {
-            let mut raw_checkout_opts = mem::zeroed();
-            let mut commit_ptrs = annotated_commits.iter().map(|c| {
-                c.raw() as *const raw::git_annotated_commit
-            }).collect::<Vec<_>>();
-            try_call!(raw::git_merge(self.raw,
-                                     commit_ptrs.as_mut_ptr(),
-                                     annotated_commits.len() as size_t,
-                                     merge_opts.map(|o| o.raw())
-                                               .unwrap_or(ptr::null()),
-                                     &raw_checkout_opts));
-        }
-        Ok(())
     }
 }
 impl Binding for Repository {

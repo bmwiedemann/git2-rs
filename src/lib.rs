@@ -6,7 +6,6 @@ use std::str;
 pub use blame::{Blame, BlameHunk, BlameIter, BlameOptions};
 pub use blob::{Blob, BlobWriter};
 pub use branch::{Branch, Branches};
-pub use buf::Buf;
 pub use commit::{Commit, Parents};
 pub use config::{Config, ConfigEntry, ConfigEntries};
 pub use cred::{Cred, CredentialHelper};
@@ -19,7 +18,6 @@ pub use object::Object;
 pub use oid::Oid;
 pub use proxy_options::ProxyOptions;
 pub use reference::{Reference, References, ReferenceNames};
-pub use reflog::{Reflog, ReflogEntry, ReflogIter};
 pub use refspec::Refspec;
 pub use remote::{Remote, RemoteConnection, Refspecs, RemoteHead, FetchOptions, PushOptions};
 pub use remote_callbacks::{RemoteCallbacks, Credentials, TransferProgress};
@@ -30,7 +28,7 @@ pub use signature::Signature;
 pub use submodule::{Submodule, SubmoduleUpdateOptions};
 pub use tag::Tag;
 pub use time::{Time, IndexTime};
-pub use tree::{Tree, TreeEntry, TreeIter, TreeWalkMode, TreeWalkResult};
+pub use tree::{Tree, TreeEntry};
 pub use util::IntoCString;
 pub enum RepositoryState {
     ApplyMailboxOrRebase,
@@ -104,7 +102,6 @@ pub mod cert;
 mod blame;
 mod blob;
 mod branch;
-mod buf;
 mod commit;
 mod config;
 mod cred;
@@ -117,7 +114,6 @@ mod object;
 mod oid;
 mod proxy_options;
 mod reference;
-mod reflog;
 mod refspec;
 mod remote;
 mod remote_callbacks;
@@ -136,12 +132,6 @@ unsafe fn opt_bytes<'a, T>(_anchor: &'a T,
         None
     } else {
         Some(CStr::from_ptr(c).to_bytes())
-    }
-}
-fn opt_cstr<T: IntoCString>(o: Option<T>) -> Result<Option<CString>, Error> {
-    match o {
-        Some(s) => s.into_c_string().map(Some),
-        None => Ok(None)
     }
 }
 impl ObjectType {

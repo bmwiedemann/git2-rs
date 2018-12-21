@@ -1,6 +1,6 @@
 use std::marker;
 use std::ptr;
-use {raw, Error, ConfigLevel, Buf, IntoCString};
+use {raw, Error, ConfigLevel, IntoCString};
 use util::{self, Binding};
 pub struct Config {
 }

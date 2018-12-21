@@ -2,7 +2,7 @@ use std::ffi::CString;
 use std::marker;
 use std::mem;
 use libc::{c_char, size_t, c_void, c_int};
-use {raw, panic, Buf, Delta, Oid, Repository, Error, DiffFormat};
+use {raw, panic, Delta, Oid, Repository, Error, DiffFormat};
 use util::{self, Binding};
 pub struct Diff<'repo> {
     raw: *mut raw::git_diff,

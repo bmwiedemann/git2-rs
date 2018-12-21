@@ -1,6 +1,6 @@
 use std::marker;
 use std::ptr;
-use {raw, Oid, ObjectType, Error, Buf, Commit, Tag, Blob, Tree, Repository};
+use {raw, Oid, ObjectType, Error, Commit, Tag, Blob, Tree, Repository};
 use util::Binding;
 pub struct Object<'repo> {
     raw: *mut raw::git_object,

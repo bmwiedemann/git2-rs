@@ -1,5 +1,4 @@
-use std::ffi::{CString, OsStr};
-use std::path::{Path, PathBuf};
+use std::ffi::CString;
 use libc::{c_char, size_t};
 use {raw, Error};
 pub trait Binding: Sized {
@@ -18,10 +17,6 @@ pub fn iter2cstrs<T, I>(iter: I) -> Result<(Vec<CString>, Vec<*const c_char>,
         count: ptrs.len() as size_t,
     };
     Ok((cstrs, ptrs, raw))
-}
-pub fn bytes2path(b: &[u8]) -> &Path {
-    use std::os::unix::prelude::*;
-    Path::new(OsStr::from_bytes(b))
 }
 pub trait IntoCString {
     fn into_c_string(self) -> Result<CString, Error>;

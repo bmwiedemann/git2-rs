@@ -1,16 +1,15 @@
 extern crate libc;
 extern crate libgit2_sys as raw;
-use std::ffi::{CStr};
+use std::ffi::CStr;
 use std::str;
-pub use error::Error;
-pub use index::{Index};
+pub use index::Index;
 pub use util::IntoCString;
-pub enum ObjectType { }
 #[macro_use] mod panic;
 mod call;
 mod util;
-mod error;
 mod index;
+pub struct Error { }
+pub enum ObjectType { }
 impl ObjectType {
     pub fn str(&self) -> &'static str {
         unsafe {

@@ -1,8 +1,8 @@
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr, OsStr};
 use std::path::Path;
 use std::ptr;
 use std::slice;
-use libc::{c_int, c_uint, size_t, c_void, c_char};
+use libc::{c_int, c_uint, c_void, c_char};
 use {raw, panic, Error};
 use IntoCString;
 use util::{self, Binding};
@@ -51,12 +51,13 @@ impl Index {
 extern fn index_matched_path_cb(path: *const c_char,
                                 matched_pathspec: *const c_char,
                                 payload: *mut c_void) -> c_int {
+    use std::os::unix::prelude::*;
     unsafe {
         let path = CStr::from_ptr(path).to_bytes();
         let matched_pathspec = CStr::from_ptr(matched_pathspec).to_bytes();
         panic::wrap(|| {
             let payload = payload as *mut &mut IndexMatchedPath;
-            (*payload)(util::bytes2path(path), matched_pathspec) as c_int
+            (*payload)(Path::new(OsStr::from_bytes(path)), matched_pathspec) as c_int
         }).unwrap_or(-1)
     }
 }
@@ -67,7 +68,7 @@ impl Binding for IndexEntry {
             ctime, mtime, dev, ino, mode, uid, gid, file_size, id, flags,
             flags_extended, path
         } = raw;
-        let mut pathlen = (flags & raw::GIT_IDXENTRY_NAMEMASK) as usize;
+        let pathlen = (flags & raw::GIT_IDXENTRY_NAMEMASK) as usize;
         let path = slice::from_raw_parts(path as *const u8, pathlen);
         IndexEntry {
             dev: dev,

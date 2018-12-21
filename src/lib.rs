@@ -4,8 +4,6 @@ use std::ffi::{CStr};
 use std::str;
 pub use error::Error;
 pub use index::{Index};
-pub use oid::Oid;
-pub use time::{Time, IndexTime};
 pub use util::IntoCString;
 pub enum ObjectType { }
 #[macro_use] mod panic;
@@ -13,8 +11,6 @@ mod call;
 mod util;
 mod error;
 mod index;
-mod oid;
-mod time;
 impl ObjectType {
     pub fn str(&self) -> &'static str {
         unsafe {
@@ -24,4 +20,3 @@ impl ObjectType {
         }
     }
 }
-pub enum FetchPrune { }

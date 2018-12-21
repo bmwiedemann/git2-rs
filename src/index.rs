@@ -3,7 +3,7 @@ use std::path::Path;
 use std::ptr;
 use std::slice;
 use libc::{c_int, c_uint, size_t, c_void, c_char};
-use {raw, panic, Error, Oid, IndexTime};
+use {raw, panic, Error};
 use IntoCString;
 use util::{self, Binding};
 pub struct Index {
@@ -11,67 +11,20 @@ pub struct Index {
 }
 pub type IndexMatchedPath<'a> = FnMut(&Path, &[u8]) -> i32 + 'a;
 pub struct IndexEntry {
-    pub ctime: IndexTime,
-    pub mtime: IndexTime,
+    pub ctime: u32,
+    pub mtime: u32,
     pub dev: u32,
     pub ino: u32,
     pub mode: u32,
     pub uid: u32,
     pub gid: u32,
     pub file_size: u32,
-    pub id: Oid,
+    pub id: u32,
     pub flags: u16,
     pub flags_extended: u16,
     pub path: Vec<u8>,
 }
 impl Index {
-    pub fn add(&mut self, entry: &IndexEntry) -> Result<(), Error> {
-        let path = try!(CString::new(&entry.path[..]));
-        let mut flags = entry.flags & !raw::GIT_IDXENTRY_NAMEMASK;
-        unsafe {
-            let raw = raw::git_index_entry {
-                dev: entry.dev,
-                ino: entry.ino,
-                mode: entry.mode,
-                uid: entry.uid,
-                gid: entry.gid,
-                file_size: entry.file_size,
-                id: *entry.id.raw(),
-                flags: flags,
-                flags_extended: entry.flags_extended,
-                path: path.as_ptr(),
-                mtime: raw::git_index_time {
-                    seconds: entry.mtime.seconds(),
-                    nanoseconds: entry.mtime.nanoseconds(),
-                },
-                ctime: raw::git_index_time {
-                    seconds: entry.ctime.seconds(),
-                    nanoseconds: entry.ctime.nanoseconds(),
-                },
-            };
-            let raw = raw::git_index_entry {
-                dev: entry.dev,
-                ino: entry.ino,
-                mode: entry.mode,
-                uid: entry.uid,
-                gid: entry.gid,
-                file_size: entry.file_size,
-                id: *entry.id.raw(),
-                flags: flags,
-                flags_extended: entry.flags_extended,
-                path: path.as_ptr(),
-                mtime: raw::git_index_time {
-                    seconds: entry.mtime.seconds(),
-                    nanoseconds: entry.mtime.nanoseconds(),
-                },
-                ctime: raw::git_index_time {
-                    seconds: entry.ctime.seconds(),
-                    nanoseconds: entry.ctime.nanoseconds(),
-                },
-            };
-            Ok(())
-        }
-    }
     pub fn add_all<T, I>(&mut self,
                          pathspecs: I,
                          mut cb: Option<&mut IndexMatchedPath>)
@@ -123,12 +76,12 @@ impl Binding for IndexEntry {
             uid: uid,
             gid: gid,
             file_size: file_size,
-            id: Binding::from_raw(&id as *const _),
+            id: 0,
             flags: flags,
             flags_extended: flags_extended,
             path: path.to_vec(),
-            mtime: Binding::from_raw(mtime),
-            ctime: Binding::from_raw(ctime),
+            mtime: 0,
+            ctime: 0,
         }
     }
     fn raw(&self) -> raw::git_index_entry {

@@ -59,34 +59,7 @@ bb3.i.i.i.i.i3:                                   ; preds = %bb2.i.i.i.i2
 cleanup.i.i.i.i.i5:                               ; preds = %bb2.i.i.i.i2
   %16 = landingpad { i8*, i32 }
           cleanup
-  %17 = inttoptr i64 %_7.sroa.28.0.copyload to i8*
-  %18 = inttoptr i64 %_7.sroa.5.0.copyload to i64*
   resume { i8*, i32 } %16
-  %20 = getelementptr inbounds i8, i8* %ptr, i64 16
-  %21 = bitcast i8* %20 to {}**
-  %22 = load {}*, {}** %21, align 8
-  %23 = icmp eq {}* %22, null
-  %24 = getelementptr inbounds i8, i8* %ptr, i64 24
-  %25 = bitcast i8* %24 to void ({}*)***
-  %26 = load void ({}*)**, void ({}*)*** %25, align 8, !nonnull !1
-  %27 = load void ({}*)*, void ({}*)** %26, align 8, !invariant.load !1, !nonnull !1
-  invoke void %27({}* nonnull %22)
-          to label %bb3.i.i.i.i.i unwind label %cleanup.i.i.i.i.i
-bb3.i.i.i.i.i:                                    ; preds = %bb2.i.i.i.i
-  %28 = bitcast i8* %24 to i64**
-  %29 = load i64*, i64** %28, align 8, !nonnull !1
-  %30 = getelementptr inbounds i64, i64* %29, i64 1
-  %31 = load i64, i64* %30, align 8, !invariant.load !1, !alias.scope !5
-  %32 = icmp eq i64 %31, 0
-  %33 = bitcast i8* %20 to i8**
-  %34 = load i8*, i8** %33, align 8, !nonnull !1
-  %35 = getelementptr inbounds i64, i64* %29, i64 2
-  %36 = load i64, i64* %35, align 8, !invariant.load !1, !alias.scope !5
-  br label %bb10
-cleanup.i.i.i.i.i:                                ; preds = %bb2.i.i.i.i
-  %37 = landingpad { i8*, i32 }
-          cleanup
-  resume { i8*, i32 } %37
 bb10:                                             ; preds = %bb4.i.i.i.i.i.i, %bb3.i.i.i.i.i, %bb2.i, %bb4, %bb4.i.i.i.i.i.i4, %bb3.i.i.i.i.i3, %bb3
   unreachable
 }
@@ -99,16 +72,10 @@ start:
   %4 = tail call zeroext i1 @"_ZN42_$LT$str$u20$as$u20$core..fmt..Display$GT$3fmt17h4d06f72123a3bf61E"([0 x i8]* noalias nonnull readonly %1, i64 %3, %"core::fmt::Formatter"* nonnull dereferenceable(96) %f)
   ret i1 %4
 }
-define internal void @_ZN4core3ptr13drop_in_place17h394991667200e1a7E({ i8*, i64 }* nocapture %arg0) unnamed_addr #0 {
-  ret void
-}
 define internal void @_ZN4core3ptr13drop_in_place17h6e528a715c899f9fE({}* nocapture %arg0) unnamed_addr #0 {
   ret void
 }
 define internal void @_ZN4core3ptr13drop_in_place17h9bd9235bcfc5fc40E({ [0 x i8]*, i64 }* nocapture %arg0) unnamed_addr #0 {
-  ret void
-}
-define internal fastcc void @_ZN4core6result13unwrap_failed17h1e4b46b65af320c3E() unnamed_addr #2 personality i32 (i32, i32, i64, %"unwind::libunwind::_Unwind_Exception"*, %"unwind::libunwind::_Unwind_Context"*)* @rust_eh_personality {
 start:
   %error = alloca %"core::cell::BorrowMutError", align 1
   %_10 = alloca [2 x { i8*, i8* }], align 8
@@ -260,61 +227,11 @@ bb2.i.i.i.i.i.i.i:                                ; preds = %bb14.i.i
   %7 = inttoptr i64 %_10.sroa.0.16.vec.extract.i.i.i to {}*
   %8 = inttoptr i64 %_10.sroa.0.24.vec.extract.i.i.i to void ({}*)**
   %9 = load void ({}*)*, void ({}*)** %8, align 8, !invariant.load !1, !noalias !33, !nonnull !1
-  invoke void %9({}* nonnull %7)
-          to label %bb3.i.i.i.i.i.i.i.i unwind label %cleanup.i.i.i.i.i.i.i.i, !noalias !33
-bb3.i.i.i.i.i.i.i.i:                              ; preds = %bb2.i.i.i.i.i.i.i
-  %10 = inttoptr i64 %_10.sroa.0.24.vec.extract.i.i.i to i64*
-  %11 = getelementptr inbounds i64, i64* %10, i64 1
-  %12 = load i64, i64* %11, align 8, !invariant.load !1, !alias.scope !41, !noalias !33
-  %13 = icmp eq i64 %12, 0
-  %14 = inttoptr i64 %_10.sroa.0.16.vec.extract.i.i.i to i8*
-  %15 = getelementptr inbounds i64, i64* %10, i64 2
-  %16 = load i64, i64* %15, align 8, !invariant.load !1, !alias.scope !41, !noalias !33
   br label %bb7.i.i.i
-cleanup.i.i.i.i.i.i.i.i:                          ; preds = %bb2.i.i.i.i.i.i.i
-  %17 = landingpad { i8*, i32 }
-          cleanup
-  %18 = inttoptr i64 %_10.sroa.0.16.vec.extract.i.i.i to i8*
-  %19 = inttoptr i64 %_10.sroa.0.24.vec.extract.i.i.i to i64*
-  resume { i8*, i32 } %17
 bb7.i.i.i:                                        ; preds = %bb4.i.i.i.i.i.i.i.i.i, %bb3.i.i.i.i.i.i.i.i, %bb14.i.i
-  %20 = load i64, i64* bitcast (<{ [40 x i8] }>* @_ZN3lib5panic10LAST_ERROR7__getit5__KEY17h3776bf008a82988eE to i64*), align 32, !range !36, !noalias !33
   unreachable
 bb16.i.i:                                         ; preds = %bb7.i.i.i, %bb12.i.i
-  %21 = load i64, i64* bitcast (i8* getelementptr inbounds (<{ [40 x i8] }>, <{ [40 x i8] }>* @_ZN3lib5panic10LAST_ERROR7__getit5__KEY17h3776bf008a82988eE, i64 0, i32 0, i64 8) to i64*), align 8, !noalias !33
-  %22 = icmp eq i64 %21, 0
-  %tmp.sroa.0.0.copyload.i7.i.i2.i.i.i8.i6.i = load i8*, i8** bitcast (i8* getelementptr inbounds (<{ [40 x i8] }>, <{ [40 x i8] }>* @_ZN3lib5panic10LAST_ERROR7__getit5__KEY17h3776bf008a82988eE, i64 0, i32 0, i64 16) to i8**), align 16, !noalias !33
-  %tmp.sroa.5.0.copyload.i6.i.i3.i.i.i7.i7.i = load i8*, i8** bitcast (i8* getelementptr inbounds (<{ [40 x i8] }>, <{ [40 x i8] }>* @_ZN3lib5panic10LAST_ERROR7__getit5__KEY17h3776bf008a82988eE, i64 0, i32 0, i64 24) to i8**), align 8, !noalias !33
-  %23 = icmp eq i8* %tmp.sroa.0.0.copyload.i7.i.i2.i.i.i8.i6.i, null
-  %24 = bitcast i8* %tmp.sroa.0.0.copyload.i7.i.i2.i.i.i8.i6.i to {}*
-  %25 = icmp ne i8* %tmp.sroa.5.0.copyload.i6.i.i3.i.i.i7.i7.i, null
-  %26 = bitcast i8* %tmp.sroa.5.0.copyload.i6.i.i3.i.i.i7.i7.i to void ({}*)**
-  %27 = load void ({}*)*, void ({}*)** %26, align 8, !invariant.load !1, !nonnull !1
-  invoke void %27({}* nonnull %24)
-          to label %bb3.i.i unwind label %cleanup.i.i
-bb3.i.i:                                          ; preds = %bb2.i
-  %28 = getelementptr inbounds i8, i8* %tmp.sroa.5.0.copyload.i6.i.i3.i.i.i7.i7.i, i64 8
-  %29 = bitcast i8* %28 to i64*
-  %30 = load i64, i64* %29, align 8, !invariant.load !1, !alias.scope !48
-  %31 = icmp eq i64 %30, 0
-  %32 = getelementptr inbounds i8, i8* %tmp.sroa.5.0.copyload.i6.i.i3.i.i.i7.i7.i, i64 16
-  %33 = bitcast i8* %32 to i64*
-  %34 = load i64, i64* %33, align 8, !invariant.load !1, !alias.scope !48
-  br label %_ZN4core3ptr13drop_in_place17h3f30137973e10800E.exit
-cleanup.i.i:                                      ; preds = %bb2.i
-  %35 = landingpad { i8*, i32 }
-          cleanup
-  resume { i8*, i32 } %35
-_ZN4core3ptr13drop_in_place17h3f30137973e10800E.exit: ; preds = %"_ZN46_$LT$std..thread..local..LocalKey$LT$T$GT$$GT$4with17h333feba022888ae6E.exit", %bb3.i.i, %bb4.i.i.i
   ret void
-}
-define { i32, i32 } @_ZN3lib4call3try17hfe15144358394a08E(i32 %ret) unnamed_addr #0 {
-start:
-  %0 = insertvalue { i32, i32 } { i32 0, i32 undef }, i32 %ret, 1
-  ret { i32, i32 } %0
-}
-define i32 @"_ZN3lib4call5impls75_$LT$impl$u20$lib..call..Convert$LT$i32$GT$$u20$for$u20$lib..ObjectType$GT$7convert17hc909eb0130d0bbc0E"(%ObjectType* noalias nocapture nonnull readonly %self) unnamed_addr #0 {
-  ret i32 4
 }
 define i32 @_ZN3lib5index21index_matched_path_cb17h362bc79cf1573866E(i8* %path, i8* %matched_pathspec, i8*) unnamed_addr #1 personality i32 (i32, i32, i64, %"unwind::libunwind::_Unwind_Exception"*, %"unwind::libunwind::_Unwind_Context"*)* @rust_eh_personality {
 start:
@@ -387,9 +304,6 @@ declare void @llvm.lifetime.start.p0i8(i64, i8* nocapture) #7
 !2 = !{!3}
 !3 = distinct !{!3, !4, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E: %ptr.1"}
 !4 = distinct !{!4, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E"}
-!5 = !{!6}
-!6 = distinct !{!6, !7, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E: %ptr.1"}
-!7 = distinct !{!7, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E"}
 !8 = !{!9}
 !9 = distinct !{!9, !10, !"_ZN4core3fmt9Arguments16new_v1_formatted17hf11ec085fdfcd9c5E: argument 0"}
 !10 = distinct !{!10, !"_ZN4core3fmt9Arguments16new_v1_formatted17hf11ec085fdfcd9c5E"}
@@ -423,12 +337,6 @@ declare void @llvm.lifetime.start.p0i8(i64, i8* nocapture) #7
 !38 = distinct !{!38, !39, !"_ZN4core3mem7replace17h05b6ddc6b02376b9E: argument 0"}
 !39 = distinct !{!39, !"_ZN4core3mem7replace17h05b6ddc6b02376b9E"}
 !40 = distinct !{!40, !39, !"_ZN4core3mem7replace17h05b6ddc6b02376b9E: %src"}
-!41 = !{!42}
-!42 = distinct !{!42, !43, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E: %ptr.1"}
-!43 = distinct !{!43, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E"}
-!48 = !{!49}
-!49 = distinct !{!49, !50, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E: %ptr.1"}
-!50 = distinct !{!50, !"_ZN5alloc5alloc8box_free17h215c3c281cc7c6f3E"}
 !51 = !{!52, !54}
 !52 = distinct !{!52, !53, !"_ZN3lib5index21index_matched_path_cb28_$u7b$$u7b$closure$u7d$$u7d$17h8244bc8ed4ef70d2E: %arg0"}
 !53 = distinct !{!53, !"_ZN3lib5index21index_matched_path_cb28_$u7b$$u7b$closure$u7d$$u7d$17h8244bc8ed4ef70d2E"}
